@@ -13,7 +13,14 @@ namespace VisualAxe.ViewModels
 	public class MainViewModel : ViewModelBase
 	{
 		public ObservableCollection<ItemViewModel> Items { get; } = new();
-		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();	//選択しているアイテム
+		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
+		private ItemViewModel? _selectedItem;
+
+		public ItemViewModel SelectedItem
+		{
+			get => _selectedItem;
+			set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+		}
 
 		public MainViewModel()
 		{

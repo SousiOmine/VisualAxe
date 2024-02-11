@@ -25,12 +25,14 @@
 						Command="{Binding AddItem}"
 						Margin="0 5"/>
 				<Button Content="削除"
+						IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
 						Command="{Binding DeleteItem}"
 						Margin="50 5" Foreground="Red" Background="Transparent"/>
 			</StackPanel>
 		</StackPanel>
 
 		<ListBox ItemsSource="{Binding Items}"
+				SelectedItem="{Binding SelectedItem}"
 				SelectedItems="{Binding SelectedItems}"
 				SelectionMode="Multiple"
 				Background="Transparent">
