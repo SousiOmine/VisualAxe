@@ -1,0 +1,44 @@
+<UserControl	xmlns="https://github.com/avaloniaui"
+			xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+			mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="900"
+			x:Class="VisualAxe.Views.MainView"
+			xmlns:vm="clr-namespace:VisualAxe.ViewModels"
+			x:DataType="vm:MainViewModel">
+	<DockPanel>
+		<WrapPanel DockPanel.Dock="Left" Width="200" Background="Gray">
+			<Button Margin="16">
+				<PathIcon Data="{StaticResource line_horizontal_3_regular}"/>
+			</Button>
+			
+		</WrapPanel>
+		<WrapPanel DockPanel.Dock="Right" Width="200" Background="Green">
+
+		</WrapPanel>
+		<StackPanel DockPanel.Dock="Top" Margin="16 0 16 16">
+			<TextBox Margin="0 16 0 0"
+					 Watermark="アイテムを検索..."/>
+			<ProgressBar IsIndeterminate="True"/>
+			<StackPanel Orientation="Horizontal">
+				<Button Content="アイテムを追加" 
+						Command="{Binding AddItem}"
+						Margin="0 5"/>
+				<Button Content="削除"
+						Command="{Binding DeleteItem}"
+						Margin="50 5" Foreground="Red" Background="Transparent"/>
+			</StackPanel>
+		</StackPanel>
+
+		<ListBox ItemsSource="{Binding Items}"
+				SelectedItems="{Binding SelectedItems}"
+				SelectionMode="Multiple"
+				Background="Transparent">
+			<ListBox.ItemsPanel>
+				<ItemsPanelTemplate>
+					<WrapPanel/>
+				</ItemsPanelTemplate>
+			</ListBox.ItemsPanel>
+		</ListBox>
+	</DockPanel>
+</UserControl>

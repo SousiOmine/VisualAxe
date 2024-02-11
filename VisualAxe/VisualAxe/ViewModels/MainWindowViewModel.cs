@@ -2,6 +2,6 @@
 {
     public class MainWindowViewModel : ViewModelBase
     {
-        public string Greeting => "Welcome to Avalonia!";
+        public MainViewModel mainView { get; } = new();
     }
 }
