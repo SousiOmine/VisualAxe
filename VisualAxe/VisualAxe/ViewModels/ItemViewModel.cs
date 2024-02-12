@@ -1,4 +1,5 @@
-﻿using Avalonia.Media.Imaging;
+﻿using Avalonia;
+using Avalonia.Media.Imaging;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -34,15 +35,27 @@ namespace VisualAxe.ViewModels
 				switch(Path.GetExtension(_item.FilePath))
 				{
 					case ".png":
+					case ".jpeg":
+					case ".jpg":
 						Bitmap bmp;
+						
 						try
 						{
 							bmp = await Task.Run(() => new Bitmap(_item.FilePath));
+							
 						}
 						catch (Exception)
 						{
 							break;
 						}
+						
+						if(bmp != null)
+						{
+							double scale = 400 / bmp.Size.Width;
+							PixelSize size = new PixelSize((int)Math.Round(bmp.Size.Width * scale), (int)Math.Round(bmp.Size.Height * scale));
+							bmp = bmp.CreateScaledBitmap(size, BitmapInterpolationMode.LowQuality);
+						}
+						
 
 						PreviewBitmap = bmp;
 						break;
