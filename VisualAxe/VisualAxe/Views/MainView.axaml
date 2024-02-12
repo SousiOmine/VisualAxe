@@ -23,7 +23,8 @@
 			<ProgressBar IsIndeterminate="True"/>
 			<StackPanel Orientation="Horizontal">
 				<Button Content="アイテムを追加" 
-						Command="{Binding AddItem}"
+						Click="AddButton_Click"
+						
 						Margin="0 5"/>
 				<Button Content="削除"
 						IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"

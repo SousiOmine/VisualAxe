@@ -27,4 +27,17 @@ public partial class MainView : UserControl
 		var dropData = e.Data;
 		this.VM.DropsFiles(dropData);
 	}
+
+	private async void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+	{
+        var topLevel = TopLevel.GetTopLevel(this);
+
+        var files = await topLevel.StorageProvider.OpenFilePickerAsync(
+            new Avalonia.Platform.Storage.FilePickerOpenOptions
+            {
+                Title = "Open File",
+                AllowMultiple = true
+        });
+        this.VM.AddItemFromDialog(files);
+	}
 }

@@ -10,6 +10,7 @@ namespace VisualAxe.ViewModels
 	public class ItemViewModel : ViewModelBase
 	{
 		private Item _item;
+		public string Title => _item.Title;
 
 		public ItemViewModel(Item item)
 		{

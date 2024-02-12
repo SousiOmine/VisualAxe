@@ -12,5 +12,6 @@
 				
 			</Panel>
 		</Border>
+		<TextBlock HorizontalAlignment="Center" Text="{Binding Title}"/>
 	</StackPanel>
 </UserControl>

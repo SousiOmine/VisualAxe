@@ -1,5 +1,6 @@
 ﻿using Avalonia.Input;
 using Avalonia.Markup.Xaml.MarkupExtensions;
+using Avalonia.Platform.Storage;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -9,6 +10,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VisualAxe.Models;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VisualAxe.ViewModels
 {
@@ -25,7 +27,7 @@ namespace VisualAxe.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _searchText, value);
 		}
 
-		public ItemViewModel SelectedItem
+		public ItemViewModel? SelectedItem
 		{
 			get => _selectedItem;
 			set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
@@ -35,7 +37,10 @@ namespace VisualAxe.ViewModels
 		{
 			AddItem = ReactiveCommand.Create(() =>
 			{
-				Item item = new();
+				Item item = new Item()
+				{
+					Title = "test"
+				};
 				item.AddToDB();
 				LoadFromDB();
 			});
@@ -67,7 +72,12 @@ namespace VisualAxe.ViewModels
 		{
 			if(data.GetText() != null)
 			{
-				SearchText = data.GetText();
+				Item item = new Item()
+				{
+					Title = data.GetText()
+				};
+				item.AddToDB();
+				LoadFromDB();
 				return;
 			}
 			List<string> path = new();
@@ -79,7 +89,33 @@ namespace VisualAxe.ViewModels
 			{
 				SearchText = path[0];
 			}
-			
+		}
+
+		public void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
+		{
+			/*List<string> filename = new();
+			foreach (var file in files)
+			{
+				filename.Add(file.Name);
+			}
+			foreach (var i in filename)
+			{
+				Item item = new Item()
+				{
+					Title = i,
+				};
+				item.AddToDB();
+			}*/
+			foreach (var file in files)
+			{
+				var item = new Item()
+				{
+					Title = file.Name,
+					FilePath = file.Path.ToString().Replace(@"file:///", "")
+				};
+				item.AddToDB();
+			}
+			LoadFromDB();
 		}
 	}
 }
