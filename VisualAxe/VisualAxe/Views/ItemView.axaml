@@ -9,7 +9,7 @@
 	<StackPanel Spacing="5" Width="200">
 		<Border>
 			<Panel Height="200" Background="#7FFF22DD">
-				
+				<Image Width="200" Stretch="Uniform" Source="{Binding PreviewBitmap}"/>
 			</Panel>
 		</Border>
 		<TextBlock HorizontalAlignment="Center" Text="{Binding Title}"/>

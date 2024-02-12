@@ -24,8 +24,11 @@
 			<StackPanel Orientation="Horizontal">
 				<Button Content="アイテムを追加" 
 						Click="AddButton_Click"
-						
 						Margin="0 5"/>
+				<Button Content="開く"
+						Command="{Binding OpenItem}"
+						IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
+						Margin="10 5"/>
 				<Button Content="削除"
 						IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
 						Command="{Binding DeleteItem}"

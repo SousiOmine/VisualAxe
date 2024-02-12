@@ -35,27 +35,25 @@ namespace VisualAxe.ViewModels
 
 		public MainViewModel()
 		{
-			AddItem = ReactiveCommand.Create(() =>
+			OpenItem = ReactiveCommand.Create(() =>
 			{
-				Item item = new Item()
+				foreach(var item in SelectedItems)
 				{
-					Title = "test"
-				};
-				item.AddToDB();
-				LoadFromDB();
+					item.OpenByProcess();
+				}
 			});
-			DeleteItem = ReactiveCommand.Create(() =>
+			DeleteItem = ReactiveCommand.Create(async () =>
 			{
 				foreach (var item in SelectedItems)
 				{
-					item.Delete();
+					await item.DeleteAsync();
 				}
 				LoadFromDB();
 			});
 			LoadFromDB();
 		}
 
-		public ICommand AddItem { get; }
+		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
 
 		private async void LoadFromDB()
@@ -66,46 +64,38 @@ namespace VisualAxe.ViewModels
 			{
 				Items.Add(new ItemViewModel(item));
 			}
+			foreach (var item in Items)
+			{
+				await item.LoadPreviewAsync();
+			}
 		}
 
-		public void DropsFiles(IDataObject data)
+		public async void DropsFiles(IDataObject data)
 		{
-			if(data.GetText() != null)
+			if(data.GetText() != null)	//もしデータがテキストだったら
 			{
 				Item item = new Item()
 				{
 					Title = data.GetText()
 				};
-				item.AddToDB();
+				await item.AddToDB();
 				LoadFromDB();
 				return;
 			}
-			List<string> path = new();
-			foreach(var item in data.GetFiles())
+			foreach (var file in data.GetFiles())
 			{
-				path.Add(item.Path.ToString());
+				var item = new Item()
+				{
+					Title = file.Name,
+					FilePath = file.Path.ToString().Replace(@"file:///", "")
+				};
+				await item.AddToDB();
 			}
-			if(path.Count > 0)
-			{
-				SearchText = path[0];
-			}
+			LoadFromDB();
 		}
 
-		public void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
+		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
 		{
-			/*List<string> filename = new();
-			foreach (var file in files)
-			{
-				filename.Add(file.Name);
-			}
-			foreach (var i in filename)
-			{
-				Item item = new Item()
-				{
-					Title = i,
-				};
-				item.AddToDB();
-			}*/
 			foreach (var file in files)
 			{
 				var item = new Item()
@@ -113,7 +103,7 @@ namespace VisualAxe.ViewModels
 					Title = file.Name,
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
-				item.AddToDB();
+				await item.AddToDB();
 			}
 			LoadFromDB();
 		}
