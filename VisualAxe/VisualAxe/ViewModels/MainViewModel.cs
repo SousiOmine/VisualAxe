@@ -1,4 +1,6 @@
-﻿using ReactiveUI;
+﻿using Avalonia.Input;
+using Avalonia.Markup.Xaml.MarkupExtensions;
+using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -15,6 +17,13 @@ namespace VisualAxe.ViewModels
 		public ObservableCollection<ItemViewModel> Items { get; } = new();
 		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
 		private ItemViewModel? _selectedItem;
+		private string? _searchText;
+
+		public string? SearchText
+		{
+			get => _searchText;
+			set => this.RaiseAndSetIfChanged(ref _searchText, value);
+		}
 
 		public ItemViewModel SelectedItem
 		{
@@ -35,7 +44,6 @@ namespace VisualAxe.ViewModels
 				foreach (var item in SelectedItems)
 				{
 					item.Delete();
-					
 				}
 				LoadFromDB();
 			});
@@ -53,6 +61,25 @@ namespace VisualAxe.ViewModels
 			{
 				Items.Add(new ItemViewModel(item));
 			}
+		}
+
+		public void DropsFiles(IDataObject data)
+		{
+			if(data.GetText() != null)
+			{
+				SearchText = data.GetText();
+				return;
+			}
+			List<string> path = new();
+			foreach(var item in data.GetFiles())
+			{
+				path.Add(item.Path.ToString());
+			}
+			if(path.Count > 0)
+			{
+				SearchText = path[0];
+			}
+			
 		}
 	}
 }

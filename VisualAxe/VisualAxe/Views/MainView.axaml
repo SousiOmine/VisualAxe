@@ -18,6 +18,7 @@
 		</WrapPanel>
 		<StackPanel DockPanel.Dock="Top" Margin="16 0 16 16">
 			<TextBox Margin="0 16 0 0"
+					 Text="{Binding SearchText}"
 					 Watermark="アイテムを検索..."/>
 			<ProgressBar IsIndeterminate="True"/>
 			<StackPanel Orientation="Horizontal">
