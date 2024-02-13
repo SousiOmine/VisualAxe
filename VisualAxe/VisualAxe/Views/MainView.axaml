@@ -20,7 +20,8 @@
 			<TextBox Margin="0 16 0 0"
 					 Text="{Binding SearchText}"
 					 Watermark="アイテムを検索..."/>
-			<ProgressBar IsIndeterminate="True"/>
+			<ProgressBar IsVisible="{Binding IsBusy}"
+						IsIndeterminate="True"/>
 			<StackPanel Orientation="Horizontal">
 				<Button Content="アイテムを追加" 
 						Click="AddButton_Click"
@@ -38,7 +39,7 @@
 
 		<ScrollViewer>
 			<StackPanel>
-				<ListBox ItemsSource="{Binding Items}"
+				<ListBox ItemsSource="{Binding ItemsToDisplay}"
 				SelectedItem="{Binding SelectedItem}"
 				SelectedItems="{Binding SelectedItems}"
 				SelectionMode="Multiple"

@@ -18,10 +18,12 @@ namespace VisualAxe.ViewModels
 {
 	public class MainViewModel : ViewModelBase
 	{
-		public ObservableCollection<ItemViewModel> Items { get; } = new();
+		public ObservableCollection<ItemViewModel> ItemsToDisplay { get; } = new();
+		private ObservableCollection<ItemViewModel> _resultItems { get; } = new();
 		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
+		private bool _isBusy;
 		private int _loadLimit = 200;
 		private CancellationTokenSource? _cancellationTokenSource;
 
@@ -35,6 +37,12 @@ namespace VisualAxe.ViewModels
 		{
 			get => _selectedItem;
 			set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+		}
+
+		public bool IsBusy
+		{
+			get => _isBusy;
+			set => this.RaiseAndSetIfChanged(ref _isBusy, value);
 		}
 
 		public MainViewModel()
@@ -52,43 +60,69 @@ namespace VisualAxe.ViewModels
 				{
 					await item.DeleteAsync();
 				}
-				PartialLoadFromDB(0, _loadLimit, true);
+				DoSearchItems(SearchText);
+				PartialLoad(0, _loadLimit, true);
 			});
 			MoreShowItem = ReactiveCommand.Create(() =>
 			{
-				PartialLoadFromDB(_loadLimit, _loadLimit + 100, false);
+				PartialLoad(_loadLimit, _loadLimit + 200, false);
 				_loadLimit += 200;
 			});
-			PartialLoadFromDB(0, _loadLimit, false);
+			DoSearchItems("");
+			PartialLoad(0, _loadLimit, false);
 		}
 
 		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
 		public ICommand MoreShowItem { get; }
 
-		private async void PartialLoadFromDB(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
+		private async void PartialLoad(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
 		{
+			IsBusy = true;
 			//もしLoadが事前に実行中ならそっちはキャンセルするためのもの
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var cancellationToken = _cancellationTokenSource.Token;
 
-			var itemfromdb = await Item.GetAllItems();
-			if(clear) Items.Clear();
+			if (clear) ItemsToDisplay.Clear();
 			for(int i = start; i < end; i++)
 			{
-				if(i >= itemfromdb.Count) break;
-				Items.Add(new ItemViewModel(itemfromdb[i]));
+				if(i >= _resultItems.Count) break;
+				ItemsToDisplay.Add(_resultItems[i]);
 			}
-			for(int i = start; i < end; i++)
+			for (int i = start; i < end; i++)
 			{
-				if (i >= itemfromdb.Count) break;
-				await Items[i].LoadPreviewAsync();
+				if (i >= _resultItems.Count) break;
+				await ItemsToDisplay[i].LoadPreviewAsync();
 				if (cancellationToken.IsCancellationRequested)
 				{
 					return;
 				}
 			}
+
+			IsBusy = false;
+		}
+
+		private async void DoSearchItems(string? s)
+		{
+			IsBusy = true;
+
+			if (System.String.IsNullOrWhiteSpace(s))
+			{
+				//もじ検索ワードが空白なら普通にぜんぶ読み込む
+				var itemfromdb = await Item.GetAllItems();
+				_resultItems.Clear();
+				foreach (var item in itemfromdb)
+				{
+					_resultItems.Add(new ItemViewModel(item));
+				}
+			}
+			else
+			{
+				
+			}
+
+			IsBusy = false;
 		}
 
 		public async void DropsFiles(IDataObject data)
@@ -100,7 +134,8 @@ namespace VisualAxe.ViewModels
 					Title = data.GetText()
 				};
 				await item.AddToDB();
-				PartialLoadFromDB(0, _loadLimit, true);
+				DoSearchItems(SearchText);
+				PartialLoad(0, _loadLimit, true);
 				return;
 			}
 			foreach (var file in data.GetFiles())
@@ -112,7 +147,8 @@ namespace VisualAxe.ViewModels
 				};
 				await item.AddToDB();
 			}
-			PartialLoadFromDB(0, _loadLimit, true);
+			DoSearchItems(SearchText);
+			PartialLoad(0, _loadLimit, true);
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
@@ -126,7 +162,8 @@ namespace VisualAxe.ViewModels
 				};
 				await item.AddToDB();
 			}
-			PartialLoadFromDB(0, _loadLimit, true);
+			DoSearchItems(SearchText);
+			PartialLoad(0, _loadLimit, true);
 		}
 	}
 }
