@@ -36,16 +36,28 @@
 			</StackPanel>
 		</StackPanel>
 
-		<ListBox ItemsSource="{Binding Items}"
+		<ScrollViewer>
+			<StackPanel>
+				<ListBox ItemsSource="{Binding Items}"
 				SelectedItem="{Binding SelectedItem}"
 				SelectedItems="{Binding SelectedItems}"
 				SelectionMode="Multiple"
 				Background="Transparent">
-			<ListBox.ItemsPanel>
-				<ItemsPanelTemplate>
-					<WrapPanel/>
-				</ItemsPanelTemplate>
-			</ListBox.ItemsPanel>
-		</ListBox>
+					<ListBox.ItemsPanel>
+						<ItemsPanelTemplate>
+							<WrapPanel/>
+						</ItemsPanelTemplate>
+					</ListBox.ItemsPanel>
+				</ListBox>
+				<Button Content="もっと読み込む" 
+						Command="{Binding MoreShowItem}"
+						HorizontalAlignment="Stretch" 
+						HorizontalContentAlignment="Center" 
+						Margin="16,16,16,16"/>
+			</StackPanel>
+			
+		</ScrollViewer>
+
+		
 	</DockPanel>
 </UserControl>

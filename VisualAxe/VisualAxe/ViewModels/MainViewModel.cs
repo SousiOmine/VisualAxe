@@ -1,4 +1,5 @@
-﻿using Avalonia.Input;
+﻿using Avalonia.Data;
+using Avalonia.Input;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform.Storage;
 using ReactiveUI;
@@ -7,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VisualAxe.Models;
@@ -20,6 +22,7 @@ namespace VisualAxe.ViewModels
 		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
+		private CancellationTokenSource? _cancellationTokenSource;
 
 		public string? SearchText
 		{
@@ -50,14 +53,24 @@ namespace VisualAxe.ViewModels
 				}
 				LoadFromDB();
 			});
+			MoreShowItem = ReactiveCommand.Create(() =>
+			{
+
+			});
 			LoadFromDB();
 		}
 
 		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
+		public ICommand MoreShowItem { get; }
 
 		private async void LoadFromDB()
 		{
+			//もしLoadFromDBが事前に実行中ならそっちはキャンセルするためのもの
+			_cancellationTokenSource?.Cancel();
+			_cancellationTokenSource = new CancellationTokenSource();
+			var cancellationToken = _cancellationTokenSource.Token;
+
 			var itemfromdb = await Item.GetAllItems();
 			Items.Clear();
 			foreach (var item in itemfromdb)
@@ -67,6 +80,10 @@ namespace VisualAxe.ViewModels
 			foreach (var item in Items)
 			{
 				await item.LoadPreviewAsync();
+				if(cancellationToken.IsCancellationRequested)
+				{
+					return;
+				}
 			}
 		}
 

@@ -7,7 +7,7 @@
 		    xmlns:vm="using:VisualAxe.ViewModels"
 		    x:DataType="vm:ItemViewModel">
 	<StackPanel Spacing="5" Width="200">
-		<Border VerticalAlignment="Center">
+		<Border MaxHeight="400" MinHeight="100" VerticalAlignment="Center">
 			<Panel Background="#7FFF22DD">
 				<Image Width="200" Stretch="Uniform" Source="{Binding PreviewBitmap}"/>
 			</Panel>
