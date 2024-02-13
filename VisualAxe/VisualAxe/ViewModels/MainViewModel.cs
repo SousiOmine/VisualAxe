@@ -22,6 +22,7 @@ namespace VisualAxe.ViewModels
 		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
+		private int _loadLimit = 200;
 		private CancellationTokenSource? _cancellationTokenSource;
 
 		public string? SearchText
@@ -51,36 +52,39 @@ namespace VisualAxe.ViewModels
 				{
 					await item.DeleteAsync();
 				}
-				LoadFromDB();
+				PartialLoadFromDB(0, _loadLimit, true);
 			});
 			MoreShowItem = ReactiveCommand.Create(() =>
 			{
-
+				PartialLoadFromDB(_loadLimit, _loadLimit + 100, false);
+				_loadLimit += 200;
 			});
-			LoadFromDB();
+			PartialLoadFromDB(0, _loadLimit, false);
 		}
 
 		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
 		public ICommand MoreShowItem { get; }
 
-		private async void LoadFromDB()
+		private async void PartialLoadFromDB(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
 		{
-			//もしLoadFromDBが事前に実行中ならそっちはキャンセルするためのもの
+			//もしLoadが事前に実行中ならそっちはキャンセルするためのもの
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var cancellationToken = _cancellationTokenSource.Token;
 
 			var itemfromdb = await Item.GetAllItems();
-			Items.Clear();
-			foreach (var item in itemfromdb)
+			if(clear) Items.Clear();
+			for(int i = start; i < end; i++)
 			{
-				Items.Add(new ItemViewModel(item));
+				if(i >= itemfromdb.Count) break;
+				Items.Add(new ItemViewModel(itemfromdb[i]));
 			}
-			foreach (var item in Items)
+			for(int i = start; i < end; i++)
 			{
-				await item.LoadPreviewAsync();
-				if(cancellationToken.IsCancellationRequested)
+				if (i >= itemfromdb.Count) break;
+				await Items[i].LoadPreviewAsync();
+				if (cancellationToken.IsCancellationRequested)
 				{
 					return;
 				}
@@ -96,7 +100,7 @@ namespace VisualAxe.ViewModels
 					Title = data.GetText()
 				};
 				await item.AddToDB();
-				LoadFromDB();
+				PartialLoadFromDB(0, _loadLimit, true);
 				return;
 			}
 			foreach (var file in data.GetFiles())
@@ -108,7 +112,7 @@ namespace VisualAxe.ViewModels
 				};
 				await item.AddToDB();
 			}
-			LoadFromDB();
+			PartialLoadFromDB(0, _loadLimit, true);
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
@@ -122,7 +126,7 @@ namespace VisualAxe.ViewModels
 				};
 				await item.AddToDB();
 			}
-			LoadFromDB();
+			PartialLoadFromDB(0, _loadLimit, true);
 		}
 	}
 }
