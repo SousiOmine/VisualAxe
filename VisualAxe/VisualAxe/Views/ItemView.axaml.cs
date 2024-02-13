@@ -7,7 +7,7 @@ namespace VisualAxe.Views;
 
 public partial class ItemView : UserControl
 {
-    private ItemViewModel VM
+    private ItemViewModel? VM
     {
         get { return this.DataContext as ItemViewModel; }
     }

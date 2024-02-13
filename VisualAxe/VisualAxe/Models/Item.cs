@@ -30,6 +30,39 @@ namespace VisualAxe.Models
 			return items;
 		}
 
+		public static async Task<List<Item>> SearchString(string s)
+		{
+			var items = new List<Item>();
+			items = db_context.GetCollection<Item>("items").FindAll().ToList();
+			var results = new List<Item>();
+			foreach (var item in items)
+			{
+				if (!String.IsNullOrWhiteSpace(item.Title))
+				{
+					if (item.Title.Contains(s)) results.Add(item);
+					continue;
+				}
+				if (!String.IsNullOrWhiteSpace(item.Memo))
+				{
+					if (item.Memo.Contains(s)) results.Add(item);
+					continue;
+				}
+				if (!String.IsNullOrWhiteSpace(item.Url))
+				{
+					if (item.Url.Contains(s)) results.Add(item);
+					continue;
+				}
+				if (!String.IsNullOrWhiteSpace(item.Index))
+				{
+					if (item.Index.Contains(s)) results.Add(item);
+					continue;
+				}
+			}
+			results.Sort((x, y) => y.AddedDate.CompareTo(x.AddedDate)); //追加日時順にソート
+
+			return results;
+		}
+
 		public async Task AddToDB()
 		{
 			this.AddedDate = DateTime.Now;

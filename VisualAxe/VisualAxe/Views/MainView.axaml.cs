@@ -32,6 +32,8 @@ public partial class MainView : UserControl
 	{
         var topLevel = TopLevel.GetTopLevel(this);
 
+        if (topLevel is null) return;
+
         var files = await topLevel.StorageProvider.OpenFilePickerAsync(
             new Avalonia.Platform.Storage.FilePickerOpenOptions
             {

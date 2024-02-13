@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.Linq;
+using System.Reactive.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
@@ -30,7 +31,10 @@ namespace VisualAxe.ViewModels
 		public string? SearchText
 		{
 			get => _searchText;
-			set => this.RaiseAndSetIfChanged(ref _searchText, value);
+			set {
+				this.RaiseAndSetIfChanged(ref _searchText, value);
+				//DoSearchItems(_searchText);
+			} 
 		}
 
 		public ItemViewModel? SelectedItem
@@ -68,8 +72,13 @@ namespace VisualAxe.ViewModels
 				PartialLoad(_loadLimit, _loadLimit + 200, false);
 				_loadLimit += 200;
 			});
+
+			this.WhenAnyValue(x => x.SearchText)
+				.Throttle(TimeSpan.FromMilliseconds(300))
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(DoSearchItems!);
+
 			DoSearchItems("");
-			PartialLoad(0, _loadLimit, false);
 		}
 
 		public ICommand OpenItem { get; }
@@ -103,7 +112,7 @@ namespace VisualAxe.ViewModels
 			IsBusy = false;
 		}
 
-		private async void DoSearchItems(string? s)
+		private async void GetResultFromDB(string? s)
 		{
 			IsBusy = true;
 
@@ -119,15 +128,27 @@ namespace VisualAxe.ViewModels
 			}
 			else
 			{
-				
+				var resultfromdb = await Item.SearchString(s);
+				_resultItems.Clear();
+				foreach (var item in resultfromdb)
+				{
+					_resultItems.Add(new ItemViewModel(item));
+				}
 			}
 
 			IsBusy = false;
 		}
 
+		private void DoSearchItems(string? s)
+		{
+			GetResultFromDB(s);
+			PartialLoad(0, _loadLimit, true);
+		}
+
 		public async void DropsFiles(IDataObject data)
 		{
-			if(data.GetText() != null)	//もしデータがテキストだったら
+			if (data is null) return;
+			if (data.GetText() != null) //もしデータがテキストだったら
 			{
 				Item item = new Item()
 				{
@@ -138,6 +159,7 @@ namespace VisualAxe.ViewModels
 				PartialLoad(0, _loadLimit, true);
 				return;
 			}
+
 			foreach (var file in data.GetFiles())
 			{
 				var item = new Item()
@@ -147,12 +169,14 @@ namespace VisualAxe.ViewModels
 				};
 				await item.AddToDB();
 			}
+
 			DoSearchItems(SearchText);
 			PartialLoad(0, _loadLimit, true);
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
 		{
+			if (files == null) return;
 			foreach (var file in files)
 			{
 				var item = new Item()
