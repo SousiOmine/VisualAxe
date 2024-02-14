@@ -228,7 +228,8 @@ namespace VisualAxe.ViewModels
 			SideViews.Clear();
 			foreach (var item in SelectedItems)
 			{
-				SideViews.Add(new SideViewModel(item.GetItem()));
+
+				SideViews.Insert(0, new SideViewModel(item.GetItem()));
 			}
 			foreach (var item in SideViews)
 			{
