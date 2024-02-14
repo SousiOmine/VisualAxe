@@ -127,6 +127,9 @@ namespace VisualAxe.ViewModels
 		private async void GetResultFromDB(string? s)
 		{
 			IsBusy = true;
+			_cancellationTokenSource?.Cancel();
+			_cancellationTokenSource = new CancellationTokenSource();
+			var cancellationToken = _cancellationTokenSource.Token;
 
 			/*if (System.String.IsNullOrWhiteSpace(s))
 			{
@@ -157,6 +160,10 @@ namespace VisualAxe.ViewModels
 			_resultItems.Clear();
 			foreach (var item in resultfromdb)
 			{
+				if (cancellationToken.IsCancellationRequested)
+				{
+					return;
+				}
 				_resultItems.Add(new ItemViewModel(item));
 			}
 
