@@ -39,23 +39,35 @@ namespace VisualAxe.Models
 			{
 				if (!String.IsNullOrWhiteSpace(item.Title))
 				{
-					if (item.Title.Contains(s)) results.Add(item);
-					continue;
+					if (item.Title.Contains(s))
+					{
+						results.Add(item);
+						continue;
+					}
 				}
 				if (!String.IsNullOrWhiteSpace(item.Memo))
 				{
-					if (item.Memo.Contains(s)) results.Add(item);
-					continue;
+					if (item.Memo.Contains(s))
+					{
+						results.Add(item);
+						continue;
+					}
 				}
 				if (!String.IsNullOrWhiteSpace(item.Url))
 				{
-					if (item.Url.Contains(s)) results.Add(item);
-					continue;
+					if (item.Url.Contains(s))
+					{
+						results.Add(item);
+						continue;
+					}
 				}
 				if (!String.IsNullOrWhiteSpace(item.Index))
 				{
-					if (item.Index.Contains(s)) results.Add(item);
-					continue;
+					if (item.Index.Contains(s))
+					{
+						results.Add(item);
+						continue;
+					}
 				}
 			}
 			results.Sort((x, y) => y.AddedDate.CompareTo(x.AddedDate)); //追加日時順にソート
@@ -87,6 +99,13 @@ namespace VisualAxe.Models
 
 			var items = db_context.GetCollection<Item>("items");
 			items.Insert(this);
+		}
+
+		public async Task Analysis()
+		{
+			//await Task.Delay(5000);
+			this.Memo = "解析完了！";
+			this.UpdateDB();
 		}
 
 		public async void UpdateDB()

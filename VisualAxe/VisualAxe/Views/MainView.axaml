@@ -5,6 +5,7 @@
 			mc:Ignorable="d" d:DesignWidth="1600" d:DesignHeight="900"
 			x:Class="VisualAxe.Views.MainView"
 			xmlns:vm="clr-namespace:VisualAxe.ViewModels"
+			xmlns:views="clr-namespace:VisualAxe.Views"
 			x:DataType="vm:MainViewModel">
 	<DockPanel>
 		<WrapPanel DockPanel.Dock="Left" Width="200" Background="Gray">
@@ -13,8 +14,10 @@
 			</Button>
 			
 		</WrapPanel>
-		<WrapPanel DockPanel.Dock="Right" Width="200" Background="Green">
-
+		<WrapPanel DockPanel.Dock="Right" Background="Transparent">
+			<ListBox ItemsSource="{Binding SideViews}"
+					 Width="300"
+					 Margin="0 0 0 0"/>
 		</WrapPanel>
 		<StackPanel DockPanel.Dock="Top" Margin="16 0 16 16">
 			<TextBox Margin="0 16 0 0"

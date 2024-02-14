@@ -28,6 +28,11 @@ namespace VisualAxe.ViewModels
 			set => this.RaiseAndSetIfChanged(ref _previewBitmap, value);
 		}
 
+		public Item GetItem()
+		{
+			return _item;
+		}
+
 		public async Task LoadPreviewAsync()
 		{
 			if (File.Exists(_item.FilePath))

@@ -6,6 +6,7 @@ using ReactiveUI;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
 using System.Linq;
 using System.Reactive.Linq;
 using System.Text;
@@ -20,8 +21,9 @@ namespace VisualAxe.ViewModels
 	public class MainViewModel : ViewModelBase
 	{
 		public ObservableCollection<ItemViewModel> ItemsToDisplay { get; } = new();
+		public ObservableCollection<SideViewModel> SideViews { get; } = new();
+		public ObservableCollection<ItemViewModel> SelectedItems { get; set; } = new();  //選択しているアイテム
 		private ObservableCollection<ItemViewModel> _resultItems { get; } = new();
-		public ObservableCollection<ItemViewModel> SelectedItems { get; } = new();  //選択しているアイテム
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
 		private bool _isBusy;
@@ -51,6 +53,7 @@ namespace VisualAxe.ViewModels
 
 		public MainViewModel()
 		{
+			SelectedItems.CollectionChanged += SideViewReflection;
 			OpenItem = ReactiveCommand.Create(() =>
 			{
 				foreach(var item in SelectedItems)
@@ -79,7 +82,10 @@ namespace VisualAxe.ViewModels
 				.Subscribe(DoSearchItems!);
 
 			DoSearchItems("");
+
+			
 		}
+
 
 		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
@@ -160,6 +166,7 @@ namespace VisualAxe.ViewModels
 				return;
 			}
 
+			//var files = new Collection<Item>();
 			foreach (var file in data.GetFiles())
 			{
 				var item = new Item()
@@ -168,6 +175,7 @@ namespace VisualAxe.ViewModels
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
 				await item.AddToDB();
+				await item.Analysis();
 			}
 
 			DoSearchItems(SearchText);
@@ -188,6 +196,15 @@ namespace VisualAxe.ViewModels
 			}
 			DoSearchItems(SearchText);
 			PartialLoad(0, _loadLimit, true);
+		}
+
+		private void SideViewReflection(object? sender, NotifyCollectionChangedEventArgs e)	//SideViewsの中身をSelectedItemsと同期する
+		{
+			SideViews.Clear();
+			foreach (var item in SelectedItems)
+			{
+				SideViews.Add(new SideViewModel(item.GetItem()));
+			}
 		}
 	}
 }
