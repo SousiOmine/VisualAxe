@@ -141,7 +141,8 @@ namespace VisualAxe.Models
 			}
 
 			var items = db_context.GetCollection<Item>("items");
-			items.Insert(this);
+			int returnId = items.Insert(this);
+			return returnId;
 		}
 
 		public async Task Analysis()

@@ -188,8 +188,6 @@ namespace VisualAxe.ViewModels
 				
 				await item.Analysis();
 			}
-
-			//DoSearchItems(SearchText);
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
