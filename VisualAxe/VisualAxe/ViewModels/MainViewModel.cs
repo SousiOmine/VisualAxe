@@ -156,17 +156,20 @@ namespace VisualAxe.ViewModels
 			if (data is null) return;
 			if (data.GetText() != null) //もしデータがテキストだったら
 			{
-				Item item = new Item()
+				Item item = new Item();
+				item.Title = data.GetText();
+				if(data.GetText().Contains("https://") || data.GetText().Contains("http://"))
 				{
-					Title = data.GetText()
-				};
+					item.Url = data.GetText();
+				}
+
 				await item.AddToDB();
 				DoSearchItems(SearchText);
 				PartialLoad(0, _loadLimit, true);
 				return;
 			}
 
-			//var files = new Collection<Item>();
+			var files = new Collection<Item>();
 			foreach (var file in data.GetFiles())
 			{
 				var item = new Item()
@@ -175,11 +178,18 @@ namespace VisualAxe.ViewModels
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
 				await item.AddToDB();
-				await item.Analysis();
+				files.Add(item);
 			}
 
 			DoSearchItems(SearchText);
-			PartialLoad(0, _loadLimit, true);
+
+			foreach (var item in files)
+			{
+				
+				await item.Analysis();
+			}
+
+			//DoSearchItems(SearchText);
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
@@ -195,7 +205,6 @@ namespace VisualAxe.ViewModels
 				await item.AddToDB();
 			}
 			DoSearchItems(SearchText);
-			PartialLoad(0, _loadLimit, true);
 		}
 
 		private void SideViewReflection(object? sender, NotifyCollectionChangedEventArgs e)	//SideViewsの中身をSelectedItemsと同期する
@@ -204,6 +213,10 @@ namespace VisualAxe.ViewModels
 			foreach (var item in SelectedItems)
 			{
 				SideViews.Add(new SideViewModel(item.GetItem()));
+			}
+			foreach (var item in SideViews)
+			{
+				item.LoadPreview();
 			}
 		}
 	}

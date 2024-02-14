@@ -1,4 +1,6 @@
-﻿using LiteDB;
+﻿using Avalonia;
+using Avalonia.Media.Imaging;
+using LiteDB;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -75,7 +77,48 @@ namespace VisualAxe.Models
 			return results;
 		}
 
-		public async Task AddToDB()
+		public static async Task<Bitmap?> GetPreviewAsync(Item item, int Width)
+		{
+			Bitmap? bitmap = null;
+			if (File.Exists(item.FilePath))
+			{
+				switch (Path.GetExtension(item.FilePath))
+				{
+					case ".png":
+					case ".jpeg":
+					case ".jpg":
+
+						try
+						{
+							bitmap = await Task.Run(() => new Bitmap(item.FilePath));
+						}
+						catch (Exception)
+						{
+							break;
+						}
+						if(bitmap is not null)
+						{
+							double scale = (double)Width / bitmap.PixelSize.Width;
+							PixelSize pixelSize = new((int)(bitmap.PixelSize.Width * scale), (int)(bitmap.PixelSize.Height * scale));
+							bitmap = bitmap.CreateScaledBitmap(pixelSize, BitmapInterpolationMode.LowQuality);
+						}
+
+
+						break;
+
+					default:
+						break;  // 何もしない
+				}
+			}
+			else if (Directory.Exists(item.FilePath))
+			{
+
+			}
+
+			return bitmap;
+		}
+
+		public async Task<int> AddToDB()
 		{
 			this.AddedDate = DateTime.Now;
 			if (this.FilePath != null && this.FilePath != "" && File.Exists(this.FilePath))	//もしファイルパスが定義されており、かつファイルが存在する場合
@@ -127,5 +170,7 @@ namespace VisualAxe.Models
 			var items = db_context.GetCollection<Item>("items");
 			items.Delete(this.Id);
 		}
+
+		
 	}
 }
