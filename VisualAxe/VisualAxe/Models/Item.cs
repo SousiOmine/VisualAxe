@@ -77,6 +77,77 @@ namespace VisualAxe.Models
 			return results;
 		}
 
+		public static async Task<List<Item>> Search(SearchInfo info)
+		{
+			var all_items = new List<Item>();
+			all_items = db_context.GetCollection<Item>("items").FindAll().ToList();
+			var word_results = new List<Item>();
+
+			if(!String.IsNullOrEmpty(info.word))	//もし検索文字列が空でなければ文字で絞り込み
+			{
+				foreach (var item in all_items)
+				{
+					if (!String.IsNullOrEmpty(item.Title))
+					{
+						if (item.Title.Contains(info.word))
+						{
+							word_results.Add(item);
+							continue;
+						}
+					}
+					if (!String.IsNullOrEmpty(item.Memo))
+					{
+						if (item.Memo.Contains(info.word))
+						{
+							word_results.Add(item);
+							continue;
+						}
+					}
+					if (!String.IsNullOrEmpty(item.Url))
+					{
+						if (item.Url.Contains(info.word))
+						{
+							word_results.Add(item);
+							continue;
+						}
+					}
+					if (!String.IsNullOrEmpty(item.Index))
+					{
+						if (item.Index.Contains(info.word))
+						{
+							word_results.Add(item);
+							continue;
+						}
+					}
+				}
+			}
+			else        //もし検索文字列が空ならぜんぶ入れる
+			{
+				foreach (var item in all_items)
+				{
+					word_results.Add(item);
+				}
+			}
+
+			var color_results = new List<Item>();
+			if(info.color is not null)
+			{
+				//ここに色での絞り込みを書く
+			}
+			else
+			{
+				foreach (var item in word_results)
+				{
+					color_results.Add(item);
+				}
+			}
+
+			var results = color_results;
+			results.Sort((x, y) => y.AddedDate.CompareTo(x.AddedDate)); //追加日時順にソート
+
+			return results;
+		}
+
 		public static async Task<Bitmap?> GetPreviewAsync(Item item, int Width)
 		{
 			Bitmap? bitmap = null;
@@ -148,7 +219,7 @@ namespace VisualAxe.Models
 		public async Task Analysis()
 		{
 			//await Task.Delay(5000);
-			this.Memo = "解析完了！";
+			this.Index = "AnalysisOK";
 			this.UpdateDB();
 		}
 

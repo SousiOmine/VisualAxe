@@ -2,6 +2,7 @@
 using Avalonia.Input;
 using Avalonia.Markup.Xaml.MarkupExtensions;
 using Avalonia.Platform.Storage;
+using Avalonia.Media;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,7 @@ namespace VisualAxe.ViewModels
 		private ObservableCollection<ItemViewModel> _resultItems { get; } = new();
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
+		private Color? _searchColor;
 		private bool _isBusy;
 		private int _loadLimit = 200;
 		private CancellationTokenSource? _cancellationTokenSource;
@@ -37,6 +39,12 @@ namespace VisualAxe.ViewModels
 				this.RaiseAndSetIfChanged(ref _searchText, value);
 				//DoSearchItems(_searchText);
 			} 
+		}
+
+		public Color? SearchColor
+		{
+			get => _searchColor;
+			set => this.RaiseAndSetIfChanged(ref _searchColor, value);
 		}
 
 		public ItemViewModel? SelectedItem
@@ -82,8 +90,6 @@ namespace VisualAxe.ViewModels
 				.Subscribe(DoSearchItems!);
 
 			DoSearchItems("");
-
-			
 		}
 
 
@@ -122,7 +128,7 @@ namespace VisualAxe.ViewModels
 		{
 			IsBusy = true;
 
-			if (System.String.IsNullOrWhiteSpace(s))
+			/*if (System.String.IsNullOrWhiteSpace(s))
 			{
 				//もじ検索ワードが空白なら普通にぜんぶ読み込む
 				var itemfromdb = await Item.GetAllItems();
@@ -140,6 +146,18 @@ namespace VisualAxe.ViewModels
 				{
 					_resultItems.Add(new ItemViewModel(item));
 				}
+			}*/
+
+			var searchInfo = new SearchInfo()
+			{
+				word = s,
+				color = null
+			};
+			var resultfromdb = await Item.Search(searchInfo);
+			_resultItems.Clear();
+			foreach (var item in resultfromdb)
+			{
+				_resultItems.Add(new ItemViewModel(item));
 			}
 
 			IsBusy = false;

@@ -20,9 +20,29 @@
 					 Margin="0 0 0 0"/>
 		</WrapPanel>
 		<StackPanel DockPanel.Dock="Top" Margin="16 0 16 16">
-			<TextBox Margin="0 16 0 0"
-					 Text="{Binding SearchText}"
-					 Watermark="アイテムを検索..."/>
+			<Grid Margin="0 16 0 0">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="auto"/>
+				</Grid.ColumnDefinitions>
+				<TextBox 
+						Text="{Binding SearchText}"
+						Watermark="アイテムを検索..."
+						Grid.Column="0"
+						Grid.Row="0"/>
+				<StackPanel Grid.Column="1" Orientation="Horizontal">
+					<CheckBox
+						Margin="16 0 0 0"
+						HorizontalAlignment="Right"
+						/>
+					<ColorPicker
+						Color="{Binding SearchColor}"
+							/>
+				</StackPanel>
+				
+				
+			</Grid>
+			
 			<ProgressBar IsVisible="{Binding IsBusy}"
 						IsIndeterminate="True"/>
 			<StackPanel Orientation="Horizontal">
