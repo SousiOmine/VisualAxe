@@ -8,11 +8,23 @@
 			xmlns:views="clr-namespace:VisualAxe.Views"
 			x:DataType="vm:MainViewModel">
 	<DockPanel>
-		<WrapPanel DockPanel.Dock="Left" Width="200" Background="Gray">
-			<Button Margin="16">
-				<PathIcon Data="{StaticResource line_horizontal_3_regular}"/>
-			</Button>
-			
+		<WrapPanel x:Name="leftPanel" 
+				DockPanel.Dock="Left" Width="200" Background="Transparent">
+			<StackPanel>
+				<Button Margin="16">
+					<PathIcon Data="{StaticResource line_horizontal_3_regular}"/>
+				</Button>
+				
+				<TextBlock Text="検索履歴" Margin="12"
+						   IsVisible="{Binding HistoryPlates.Count}"/>
+				<ListBox Width="{Binding ElementName=leftPanel, Path=Width}"
+					Background="Transparent"
+					HorizontalAlignment="Stretch"
+					ItemsSource="{Binding HistoryPlates}"
+					SelectedItem="{Binding SelectHistoryPlate}"
+					SelectedIndex="{Binding SelectHistoryPlateIndex}"/>
+			</StackPanel>
+
 		</WrapPanel>
 		<WrapPanel DockPanel.Dock="Right" Background="Transparent">
 			<ListBox ItemsSource="{Binding SideViews}"

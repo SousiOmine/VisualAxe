@@ -4,6 +4,7 @@ using Avalonia.Input;
 using Avalonia.Markup.Xaml;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using VisualAxe.ViewModels;
 
 namespace VisualAxe.Views;

@@ -15,7 +15,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VisualAxe.Models;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace VisualAxe.ViewModels
 {
@@ -24,8 +23,12 @@ namespace VisualAxe.ViewModels
 		public ObservableCollection<ItemViewModel> ItemsToDisplay { get; } = new();
 		public ObservableCollection<SideViewModel> SideViews { get; } = new();
 		public ObservableCollection<ItemViewModel> SelectedItems { get; set; } = new();  //選択しているアイテム
+		public ObservableCollection<SearchPlateViewModel> HistoryPlates { get; } = new();
+
 		private ObservableCollection<ItemViewModel> _resultItems { get; } = new();
 		private ItemViewModel? _selectedItem;
+		private SearchPlateViewModel? _selectHistoryPlate;
+		private int _selectHistoryPlateIndex;
 		private string? _searchText;
 		private Color? _searchColor;
 		private bool _useSearchColor;
@@ -58,6 +61,30 @@ namespace VisualAxe.ViewModels
 		{
 			get => _selectedItem;
 			set => this.RaiseAndSetIfChanged(ref _selectedItem, value);
+		}
+
+		public SearchPlateViewModel? SelectHistoryPlate
+		{
+			get => _selectHistoryPlate;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _selectHistoryPlate, value);
+				if (value is not null)
+				{
+					SearchText = value.GetSearchInfo().word;
+					SearchColor = value.GetSearchInfo().color;
+					UseSearchColor = (value.GetSearchInfo().color is not null);
+				}
+			}
+		}
+
+		public int SelectHistoryPlateIndex
+		{
+			get => _selectHistoryPlateIndex;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _selectHistoryPlateIndex, value);
+			}
 		}
 
 		public bool IsBusy
@@ -103,8 +130,6 @@ namespace VisualAxe.ViewModels
 				.Throttle(TimeSpan.FromMilliseconds(100))
 				.ObserveOn(RxApp.MainThreadScheduler)
 				.Subscribe(_ => DoSearchItems());
-
-			//DoSearchItems("");
 		}
 
 
@@ -140,23 +165,22 @@ namespace VisualAxe.ViewModels
 			IsBusy = false;
 		}
 
-		private async void GetResultFromDB()
+		private async void GetResultFromDB(SearchInfo searchInfo)
 		{
 			IsBusy = true;
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var cancellationToken = _cancellationTokenSource.Token;
 
-			string? useword = SearchText;
-			Color? usecolor = null;
-			if (UseSearchColor) usecolor = SearchColor;
-
-			var searchInfo = new SearchInfo()
-			{
-				word = useword,
-				color = usecolor
-			};
+			
 			var resultfromdb = await Item.Search(searchInfo);
+			
+			if (!String.IsNullOrEmpty(searchInfo.word) || searchInfo.color is not null)
+			{
+				SelectHistoryPlateIndex = -1;
+				HistoryPlates.Insert(0, new SearchPlateViewModel(searchInfo));
+			}
+
 			_resultItems.Clear();
 			foreach (var item in resultfromdb)
 			{
@@ -172,7 +196,17 @@ namespace VisualAxe.ViewModels
 
 		private void DoSearchItems()
 		{
-			GetResultFromDB();
+			string? useword = SearchText;
+			Color? usecolor = null;
+			if (UseSearchColor) usecolor = SearchColor;
+
+			var searchInfo = new SearchInfo()
+			{
+				word = useword,
+				color = usecolor
+			};
+
+			GetResultFromDB(searchInfo);
 			PartialLoad(0, _loadLimit, true);
 		}
 
