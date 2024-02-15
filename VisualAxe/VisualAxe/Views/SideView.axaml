@@ -13,6 +13,31 @@
 				<Image	Source="{Binding PreviewBitmap}"/>
 			</Panel>
 		</Border>
+		<Border CornerRadius="10" ClipToBounds="True"
+				IsVisible="{Binding Color1, Converter={x:Static ObjectConverters.IsNotNull}}"
+				Margin="0 16 0 0">
+			<Grid Height="20">
+				<Grid.ColumnDefinitions>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+					<ColumnDefinition Width="*"/>
+				</Grid.ColumnDefinitions>
+
+				<Panel Background="{Binding Color1}" 
+					Grid.Column="0"/>
+				<Panel Background="{Binding Color2}"
+					Grid.Column="1"/>
+				<Panel Background="{Binding Color3}"
+					   Grid.Column="2"/>
+				<Panel Background="{Binding Color4}"
+					   Grid.Column="3"/>
+				<Panel Background="{Binding Color5}"
+					   Grid.Column="4"/>
+			</Grid>
+		</Border>
+
 
 		<TextBlock Text="{Binding Title}" 
 				   Margin="0 16 0 0"
@@ -23,6 +48,8 @@
 				Margin="0 16 0 0"/>
 		<TextBlock Text="メモ" FontSize="16" Margin="0 16 0 0"/>
 		<TextBox Text="{Binding Memo}"
+				AcceptsReturn="True"
+				 TextWrapping="Wrap"
 				Watermark="メモを入力"
 				Height="200"
 				Margin="0 4 0 0"/>

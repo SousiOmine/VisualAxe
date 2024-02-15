@@ -32,7 +32,8 @@
 						Grid.Row="0"/>
 				<StackPanel Grid.Column="1" Orientation="Horizontal">
 					<CheckBox
-						Margin="16 0 0 0"
+						Content="色で絞り込み"
+						Margin="16 0 4 0"
 						HorizontalAlignment="Right"
 						/>
 					<ColorPicker

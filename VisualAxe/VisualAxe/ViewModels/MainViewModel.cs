@@ -89,7 +89,7 @@ namespace VisualAxe.ViewModels
 				.ObserveOn(RxApp.MainThreadScheduler)
 				.Subscribe(DoSearchItems!);
 
-			DoSearchItems("");
+			//DoSearchItems("");
 		}
 
 
@@ -130,26 +130,6 @@ namespace VisualAxe.ViewModels
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var cancellationToken = _cancellationTokenSource.Token;
-
-			/*if (System.String.IsNullOrWhiteSpace(s))
-			{
-				//もじ検索ワードが空白なら普通にぜんぶ読み込む
-				var itemfromdb = await Item.GetAllItems();
-				_resultItems.Clear();
-				foreach (var item in itemfromdb)
-				{
-					_resultItems.Add(new ItemViewModel(item));
-				}
-			}
-			else
-			{
-				var resultfromdb = await Item.SearchString(s);
-				_resultItems.Clear();
-				foreach (var item in resultfromdb)
-				{
-					_resultItems.Add(new ItemViewModel(item));
-				}
-			}*/
 
 			var searchInfo = new SearchInfo()
 			{
@@ -211,13 +191,14 @@ namespace VisualAxe.ViewModels
 			foreach (var item in files)
 			{
 				
-				await item.Analysis();
+				await item.MakeIndex();
 			}
 		}
 
 		public async void AddItemFromDialog(IReadOnlyList<IStorageFile>? files)
 		{
 			if (files == null) return;
+			var collectFiles = new Collection<Item>();
 			foreach (var file in files)
 			{
 				var item = new Item()
@@ -226,8 +207,14 @@ namespace VisualAxe.ViewModels
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
 				await item.AddToDB();
+				collectFiles.Add(item);
 			}
 			DoSearchItems(SearchText);
+
+			foreach (var item in collectFiles)
+			{
+				await item.MakeIndex();
+			}
 		}
 
 		private void SideViewReflection(object? sender, NotifyCollectionChangedEventArgs e)	//SideViewsの中身をSelectedItemsと同期する

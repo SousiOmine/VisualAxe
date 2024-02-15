@@ -36,7 +36,7 @@ namespace VisualAxe.ViewModels
 
 		public async Task LoadPreviewAsync()
 		{
-			PreviewBitmap = await Item.GetPreviewAsync(_item, 200);
+			PreviewBitmap = await Item.GetPreviewAsync(_item, 200, true);
 		}
 
 		public void OpenByProcess()

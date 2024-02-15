@@ -1,4 +1,5 @@
 ﻿using Avalonia;
+using Avalonia.Media;
 using Avalonia.Media.Imaging;
 using LiteDB;
 using System;
@@ -19,6 +20,7 @@ namespace VisualAxe.Models
 		public string? FilePath { get; set; }
 		public string? Memo { get; set; }
 		public string? Url { get; set; }
+		public List<Color>? Colors { get; set; }
 		public string? Index { get; set; }
 
 		private static LiteDatabase db_context = new("./data.db");
@@ -32,49 +34,12 @@ namespace VisualAxe.Models
 			return items;
 		}
 
-		public static async Task<List<Item>> SearchString(string s)
-		{
-			var items = new List<Item>();
-			items = db_context.GetCollection<Item>("items").FindAll().ToList();
-			var results = new List<Item>();
-			foreach (var item in items)
-			{
-				if (!String.IsNullOrWhiteSpace(item.Title))
-				{
-					if (item.Title.Contains(s))
-					{
-						results.Add(item);
-						continue;
-					}
-				}
-				if (!String.IsNullOrWhiteSpace(item.Memo))
-				{
-					if (item.Memo.Contains(s))
-					{
-						results.Add(item);
-						continue;
-					}
-				}
-				if (!String.IsNullOrWhiteSpace(item.Url))
-				{
-					if (item.Url.Contains(s))
-					{
-						results.Add(item);
-						continue;
-					}
-				}
-				if (!String.IsNullOrWhiteSpace(item.Index))
-				{
-					if (item.Index.Contains(s))
-					{
-						results.Add(item);
-						continue;
-					}
-				}
-			}
-			results.Sort((x, y) => y.AddedDate.CompareTo(x.AddedDate)); //追加日時順にソート
-
-			return results;
+		public static async Task<Item?> GetItem(int id)
+		{	
+			var items = db_context.GetCollection<Item>("items");
+			
+			Item item = items.FindById(id);
+			return item;
 		}
 
 		public static async Task<List<Item>> Search(SearchInfo info)
@@ -148,7 +113,7 @@ namespace VisualAxe.Models
 			return results;
 		}
 
-		public static async Task<Bitmap?> GetPreviewAsync(Item item, int Width)
+		public static async Task<Bitmap?> GetPreviewAsync(Item item, int Width, bool getIcon)
 		{
 			Bitmap? bitmap = null;
 			if (File.Exists(item.FilePath))
@@ -216,14 +181,22 @@ namespace VisualAxe.Models
 			return returnId;
 		}
 
-		public async Task Analysis()
+		public async Task MakeIndex()
 		{
 			//await Task.Delay(5000);
+			Bitmap? mybmp = await Item.GetPreviewAsync(this, 200, false);
+			if(mybmp is not null)	//もし画像があれば
+			{	
+				List<Color> colors = await Analysis.GetMajorColorAsync(mybmp, 50);
+				this.Colors = [.. colors];
+				mybmp.Dispose();
+			}
+			
 			this.Index = "AnalysisOK";
 			this.UpdateDB();
 		}
 
-		public async void UpdateDB()
+		public async Task UpdateDB()
 		{
 			var items = db_context.GetCollection<Item>("items");
 			items.Update(this);
