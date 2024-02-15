@@ -92,5 +92,15 @@ namespace VisualAxe.Models
 
 			return result_colors;
 		}
+
+		public static int ColorDistance(Color color1, Color color2)
+		{
+			int aDiff = Math.Abs(color1.A - color2.A);
+			int rDiff = Math.Abs(color1.R - color2.R);
+			int gDiff = Math.Abs(color1.G - color2.G);
+			int bDiff = Math.Abs(color1.B - color2.B);
+
+			return aDiff + rDiff + gDiff + bDiff;
+		}
 	}
 }

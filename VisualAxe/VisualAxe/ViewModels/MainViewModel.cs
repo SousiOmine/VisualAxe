@@ -28,8 +28,9 @@ namespace VisualAxe.ViewModels
 		private ItemViewModel? _selectedItem;
 		private string? _searchText;
 		private Color? _searchColor;
+		private bool _useSearchColor;
 		private bool _isBusy;
-		private int _loadLimit = 200;
+		private int _loadLimit = 100;
 		private CancellationTokenSource? _cancellationTokenSource;
 
 		public string? SearchText
@@ -45,6 +46,12 @@ namespace VisualAxe.ViewModels
 		{
 			get => _searchColor;
 			set => this.RaiseAndSetIfChanged(ref _searchColor, value);
+		}
+
+		public bool UseSearchColor
+		{
+			get => _useSearchColor;
+			set => this.RaiseAndSetIfChanged(ref _useSearchColor, value);
 		}
 
 		public ItemViewModel? SelectedItem
@@ -75,7 +82,7 @@ namespace VisualAxe.ViewModels
 				{
 					await item.DeleteAsync();
 				}
-				DoSearchItems(SearchText);
+				DoSearchItems();
 				PartialLoad(0, _loadLimit, true);
 			});
 			MoreShowItem = ReactiveCommand.Create(() =>
@@ -87,7 +94,15 @@ namespace VisualAxe.ViewModels
 			this.WhenAnyValue(x => x.SearchText)
 				.Throttle(TimeSpan.FromMilliseconds(300))
 				.ObserveOn(RxApp.MainThreadScheduler)
-				.Subscribe(DoSearchItems!);
+				.Subscribe(_ => DoSearchItems());
+			this.WhenAnyValue(x => x.SearchColor)
+				.Throttle(TimeSpan.FromMilliseconds(500))
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(_ => DoSearchItems());
+			this.WhenAnyValue(x => x.UseSearchColor)
+				.Throttle(TimeSpan.FromMilliseconds(100))
+				.ObserveOn(RxApp.MainThreadScheduler)
+				.Subscribe(_ => DoSearchItems());
 
 			//DoSearchItems("");
 		}
@@ -110,6 +125,7 @@ namespace VisualAxe.ViewModels
 			{
 				if(i >= _resultItems.Count) break;
 				ItemsToDisplay.Add(_resultItems[i]);
+				if (cancellationToken.IsCancellationRequested) return;
 			}
 			for (int i = start; i < end; i++)
 			{
@@ -124,17 +140,21 @@ namespace VisualAxe.ViewModels
 			IsBusy = false;
 		}
 
-		private async void GetResultFromDB(string? s)
+		private async void GetResultFromDB()
 		{
 			IsBusy = true;
 			_cancellationTokenSource?.Cancel();
 			_cancellationTokenSource = new CancellationTokenSource();
 			var cancellationToken = _cancellationTokenSource.Token;
 
+			string? useword = SearchText;
+			Color? usecolor = null;
+			if (UseSearchColor) usecolor = SearchColor;
+
 			var searchInfo = new SearchInfo()
 			{
-				word = s,
-				color = null
+				word = useword,
+				color = usecolor
 			};
 			var resultfromdb = await Item.Search(searchInfo);
 			_resultItems.Clear();
@@ -150,9 +170,9 @@ namespace VisualAxe.ViewModels
 			IsBusy = false;
 		}
 
-		private void DoSearchItems(string? s)
+		private void DoSearchItems()
 		{
-			GetResultFromDB(s);
+			GetResultFromDB();
 			PartialLoad(0, _loadLimit, true);
 		}
 
@@ -169,7 +189,7 @@ namespace VisualAxe.ViewModels
 				}
 
 				await item.AddToDB();
-				DoSearchItems(SearchText);
+				DoSearchItems();
 				PartialLoad(0, _loadLimit, true);
 				return;
 			}
@@ -186,7 +206,7 @@ namespace VisualAxe.ViewModels
 				files.Add(item);
 			}
 
-			DoSearchItems(SearchText);
+			DoSearchItems();
 
 			foreach (var item in files)
 			{
@@ -209,7 +229,7 @@ namespace VisualAxe.ViewModels
 				await item.AddToDB();
 				collectFiles.Add(item);
 			}
-			DoSearchItems(SearchText);
+			DoSearchItems();
 
 			foreach (var item in collectFiles)
 			{

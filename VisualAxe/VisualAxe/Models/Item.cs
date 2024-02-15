@@ -42,11 +42,11 @@ namespace VisualAxe.Models
 			return item;
 		}
 
-		public static async Task<List<Item>> Search(SearchInfo info)
+		public static Task<List<Item>> Search(SearchInfo info)
 		{
 			var all_items = new List<Item>();
 			all_items = db_context.GetCollection<Item>("items").FindAll().ToList();
-			var word_results = new List<Item>();
+			var word_results = new List<Item>();	//文字による検索結果が格納されるリスト
 
 			if(!String.IsNullOrEmpty(info.word))	//もし検索文字列が空でなければ文字で絞り込み
 			{
@@ -54,7 +54,7 @@ namespace VisualAxe.Models
 				{
 					if (!String.IsNullOrEmpty(item.Title))
 					{
-						if (item.Title.Contains(info.word))
+						if (item.Title.Contains(info.word, StringComparison.OrdinalIgnoreCase))
 						{
 							word_results.Add(item);
 							continue;
@@ -62,7 +62,7 @@ namespace VisualAxe.Models
 					}
 					if (!String.IsNullOrEmpty(item.Memo))
 					{
-						if (item.Memo.Contains(info.word))
+						if (item.Memo.Contains(info.word, StringComparison.OrdinalIgnoreCase))
 						{
 							word_results.Add(item);
 							continue;
@@ -70,7 +70,7 @@ namespace VisualAxe.Models
 					}
 					if (!String.IsNullOrEmpty(item.Url))
 					{
-						if (item.Url.Contains(info.word))
+						if (item.Url.Contains(info.word, StringComparison.OrdinalIgnoreCase))
 						{
 							word_results.Add(item);
 							continue;
@@ -78,7 +78,7 @@ namespace VisualAxe.Models
 					}
 					if (!String.IsNullOrEmpty(item.Index))
 					{
-						if (item.Index.Contains(info.word))
+						if (item.Index.Contains(info.word, StringComparison.OrdinalIgnoreCase))
 						{
 							word_results.Add(item);
 							continue;
@@ -94,10 +94,23 @@ namespace VisualAxe.Models
 				}
 			}
 
+			//文字で絞り込んだ後、色でさらに絞る
 			var color_results = new List<Item>();
 			if(info.color is not null)
 			{
 				//ここに色での絞り込みを書く
+				foreach (var item in word_results)
+				{
+					if(item.Colors is null) continue;
+					for (int i = 0; i < Math.Min(item.Colors.Count, 5); i++)
+					{
+						if (Analysis.ColorDistance((Color)item.Colors[i], (Color)info.color) <= 100)
+						{
+							color_results.Add(item);
+							break;
+						}
+					}
+				}
 			}
 			else
 			{
@@ -110,7 +123,7 @@ namespace VisualAxe.Models
 			var results = color_results;
 			results.Sort((x, y) => y.AddedDate.CompareTo(x.AddedDate)); //追加日時順にソート
 
-			return results;
+			return Task.FromResult(results);
 		}
 
 		public static async Task<Bitmap?> GetPreviewAsync(Item item, int Width, bool getIcon)

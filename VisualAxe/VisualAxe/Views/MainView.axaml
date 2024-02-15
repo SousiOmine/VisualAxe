@@ -16,6 +16,7 @@
 		</WrapPanel>
 		<WrapPanel DockPanel.Dock="Right" Background="Transparent">
 			<ListBox ItemsSource="{Binding SideViews}"
+					 Background="Transparent"
 					 Width="300"
 					 Margin="0 0 0 0"/>
 		</WrapPanel>
@@ -32,6 +33,7 @@
 						Grid.Row="0"/>
 				<StackPanel Grid.Column="1" Orientation="Horizontal">
 					<CheckBox
+						IsChecked="{Binding UseSearchColor}"
 						Content="色で絞り込み"
 						Margin="16 0 4 0"
 						HorizontalAlignment="Right"
