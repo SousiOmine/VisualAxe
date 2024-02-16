@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using VisualAxe.Models;
+using Avalonia.Input.Platform;
 
 namespace VisualAxe.ViewModels
 {
@@ -24,11 +25,14 @@ namespace VisualAxe.ViewModels
 		public ObservableCollection<SideViewModel> SideViews { get; } = new();
 		public ObservableCollection<ItemViewModel> SelectedItems { get; set; } = new();  //選択しているアイテム
 		public ObservableCollection<SearchPlateViewModel> HistoryPlates { get; } = new();
+		public ObservableCollection<SearchPlateViewModel> PinPlates { get; } = new();
 
 		private ObservableCollection<ItemViewModel> _resultItems { get; } = new();
 		private ItemViewModel? _selectedItem;
 		private SearchPlateViewModel? _selectHistoryPlate;
+		private SearchPlateViewModel? _selectPinPlate;
 		private int _selectHistoryPlateIndex;
+		private int _selectPinPlateIndex;
 		private string? _searchText;
 		private Color? _searchColor;
 		private bool _useSearchColor;
@@ -78,6 +82,25 @@ namespace VisualAxe.ViewModels
 			}
 		}
 
+		public SearchPlateViewModel? SelectPinPlate
+		{
+			get => _selectPinPlate;
+			set
+			{
+				this.RaiseAndSetIfChanged(ref _selectPinPlate, value);
+				if (value is not null)
+				{
+					if (SearchText != value.GetSearchInfo().word) SearchText = value.GetSearchInfo().word;
+					if (SearchColor != value.GetSearchInfo().color) SearchColor = value.GetSearchInfo().color;
+					if (UseSearchColor == (value.GetSearchInfo().color is null))
+					{
+						UseSearchColor = (value.GetSearchInfo().color is not null);
+					}
+						
+				}
+			}
+		}
+
 		public int SelectHistoryPlateIndex
 		{
 			get => _selectHistoryPlateIndex;
@@ -85,6 +108,12 @@ namespace VisualAxe.ViewModels
 			{
 				this.RaiseAndSetIfChanged(ref _selectHistoryPlateIndex, value);
 			}
+		}
+
+		public int SelectPinPlateIndex
+		{
+			get => _selectPinPlateIndex;
+			set => this.RaiseAndSetIfChanged(ref _selectPinPlateIndex, value);		
 		}
 
 		public bool IsBusy
@@ -130,6 +159,8 @@ namespace VisualAxe.ViewModels
 				.Throttle(TimeSpan.FromMilliseconds(100))
 				.ObserveOn(RxApp.MainThreadScheduler)
 				.Subscribe(_ => DoSearchItems());
+
+			LoadPinPlates();
 		}
 
 
@@ -137,7 +168,7 @@ namespace VisualAxe.ViewModels
 		public ICommand DeleteItem { get; }
 		public ICommand MoreShowItem { get; }
 
-		private async void PartialLoad(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
+		private async Task<bool> PartialLoad(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
 		{
 			IsBusy = true;
 			//もしLoadが事前に実行中ならそっちはキャンセルするためのもの
@@ -150,7 +181,11 @@ namespace VisualAxe.ViewModels
 			{
 				if(i >= _resultItems.Count) break;
 				ItemsToDisplay.Add(_resultItems[i]);
-				if (cancellationToken.IsCancellationRequested) return;
+				if (cancellationToken.IsCancellationRequested)
+				{
+					IsBusy = false;
+					return false;
+				}
 			}
 			for (int i = start; i < end; i++)
 			{
@@ -158,11 +193,13 @@ namespace VisualAxe.ViewModels
 				await ItemsToDisplay[i].LoadPreviewAsync();
 				if (cancellationToken.IsCancellationRequested)
 				{
-					return;
+					IsBusy = false;
+					return false;
 				}
 			}
 
 			IsBusy = false;
+			return true;
 		}
 
 		private async void GetResultFromDB(SearchInfo searchInfo)
@@ -174,12 +211,6 @@ namespace VisualAxe.ViewModels
 
 			
 			var resultfromdb = await Item.Search(searchInfo);
-			
-			if (!String.IsNullOrEmpty(searchInfo.word) || searchInfo.color is not null)
-			{
-				SelectHistoryPlateIndex = -1;
-				HistoryPlates.Insert(0, new SearchPlateViewModel(searchInfo));
-			}
 
 			_resultItems.Clear();
 			foreach (var item in resultfromdb)
@@ -188,13 +219,13 @@ namespace VisualAxe.ViewModels
 				{
 					return;
 				}
-				_resultItems.Add(new ItemViewModel(item));
+				_resultItems.Add(new ItemViewModel(item, this));
 			}
 
 			IsBusy = false;
 		}
 
-		private void DoSearchItems()
+		private async void DoSearchItems()
 		{
 			string? useword = SearchText;
 			Color? usecolor = null;
@@ -207,7 +238,21 @@ namespace VisualAxe.ViewModels
 			};
 
 			GetResultFromDB(searchInfo);
-			PartialLoad(0, _loadLimit, true);
+			bool SearchComplete = await PartialLoad(0, _loadLimit, true);
+			if (SearchComplete) {
+				//SearchInfoの内容が検索履歴の最も新しいものと異なれば検索履歴に追加する
+				if(HistoryPlates.Count == 0 || HistoryPlates[0].GetSearchInfo().word != searchInfo.word || HistoryPlates[0].GetSearchInfo().color != searchInfo.color)
+				{
+					if (String.IsNullOrEmpty(searchInfo.word) && searchInfo.color == null)
+					{
+						return;
+					}
+					HistoryPlates.Insert(0, new SearchPlateViewModel(searchInfo, false, this));
+					SelectHistoryPlateIndex = -1;
+					SelectPinPlateIndex = -1;
+
+				}		
+			}
 		}
 
 		public async void DropsFiles(IDataObject data)
@@ -225,6 +270,7 @@ namespace VisualAxe.ViewModels
 				await item.AddToDB();
 				DoSearchItems();
 				PartialLoad(0, _loadLimit, true);
+				await item.MakeIndex();
 				return;
 			}
 
@@ -282,6 +328,18 @@ namespace VisualAxe.ViewModels
 			foreach (var item in SideViews)
 			{
 				item.LoadPreview();
+			}
+		}
+
+		public void LoadPinPlates()
+		{
+			SelectPinPlateIndex = -1;
+			PinPlates.Clear();
+
+			var pinsfromdb = SearchInfo.GetAllFromDB();
+			foreach (var item in pinsfromdb)
+			{
+				PinPlates.Add(new SearchPlateViewModel(item, true, this));
 			}
 		}
 	}

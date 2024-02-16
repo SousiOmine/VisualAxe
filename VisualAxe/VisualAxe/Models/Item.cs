@@ -7,6 +7,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -170,23 +171,50 @@ namespace VisualAxe.Models
 		public async Task<int> AddToDB()
 		{
 			this.AddedDate = DateTime.Now;
-			if (this.FilePath != null && this.FilePath != "" && File.Exists(this.FilePath))	//もしファイルパスが定義されており、かつファイルが存在する場合
+
+			//ファイルがなくてもフォルダはとりあえず作成しておく
+			await Task.Run(() =>
 			{
-				await Task.Run(() => {
-					if (!Directory.Exists("." + Path.DirectorySeparatorChar + ItemsStorageName))    //格納用フォルダがなければ作成
-					{
-						Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName);
-					}
-				});
-				string rand_folder = Guid.NewGuid().ToString().Substring(0, 16);    //GUIDを使ってランダムな16文字を用意
-				await Task.Run(() => {
-					Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder);
-				});
+				if (!Directory.Exists("." + Path.DirectorySeparatorChar + ItemsStorageName))    //格納用フォルダがなければ作成
+				{
+					Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName);
+				}
+			});
+			string rand_folder = Guid.NewGuid().ToString().Substring(0, 16);    //GUIDを使ってランダムな16文字を用意
+			await Task.Run(() =>
+			{
+				Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder);
+			});
+
+			if (this.FilePath is not null && this.FilePath != "" && File.Exists(this.FilePath)) //もしファイルパスが定義されており、かつファイルが存在する場合はコピー
+			{
 				string copied_path = "." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder + Path.DirectorySeparatorChar + Path.GetFileName(this.FilePath);
-				await Task.Run(() => {
+				await Task.Run(() =>
+				{
 					File.Copy(this.FilePath, copied_path);
 				});
 				this.FilePath = copied_path;
+			}
+			else if (this.Url is not null)  //もしURLが定義されていた場合
+			{
+				//画像ならダウンロードしフォルダに配置する
+				if(this.Url.Contains("png", StringComparison.OrdinalIgnoreCase) || this.Url.Contains("jpg", StringComparison.OrdinalIgnoreCase) || this.Url.Contains("jpeg", StringComparison.OrdinalIgnoreCase))
+				{
+					string download_path = "." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder + Path.DirectorySeparatorChar + "image.png";
+					await Task.Run(async () =>
+					{
+						var client = new HttpClient();
+						var responce = await client.GetAsync(this.Url);
+						if(responce.IsSuccessStatusCode)
+						{
+							using var stream = await responce.Content.ReadAsStreamAsync();
+							using var outStream = File.Create(download_path);
+							stream.CopyTo(outStream);
+							this.FilePath = download_path;
+						}
+					});
+				}
+				
 			}
 
 			var items = db_context.GetCollection<Item>("items");

@@ -14,6 +14,15 @@
 				<Button Margin="16">
 					<PathIcon Data="{StaticResource line_horizontal_3_regular}"/>
 				</Button>
+
+				<TextBlock Text="ピン留め" Margin="12"
+						   IsVisible="{Binding PinPlates.Count}"/>
+				<ListBox Width="{Binding ElementName=leftPanel, Path=Width}"
+					Background="Transparent"
+					HorizontalAlignment="Stretch"
+					ItemsSource="{Binding PinPlates}"
+					SelectedItem="{Binding SelectPinPlate}"
+					SelectedIndex="{Binding SelectPinPlateIndex}"/>
 				
 				<TextBlock Text="検索履歴" Margin="12"
 						   IsVisible="{Binding HistoryPlates.Count}"/>

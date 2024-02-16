@@ -8,6 +8,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Input;
 using VisualAxe.Models;
 
 namespace VisualAxe.ViewModels
@@ -15,13 +16,28 @@ namespace VisualAxe.ViewModels
 	public class ItemViewModel : ViewModelBase
 	{
 		private Item _item;
+		private MainViewModel _mainViewModel;
 		private Bitmap? _previewBitmap;
 		public string Title => _item.Title;
 
-		public ItemViewModel(Item item)
+		public ItemViewModel(Item item, MainViewModel mainViewModel)
 		{
 			_item = item;
+			_mainViewModel = mainViewModel;
+
+
+			OpenItem = ReactiveCommand.Create(() =>
+			{
+				_mainViewModel.OpenItem.Execute(null);
+			});
+			DeleteItem = ReactiveCommand.Create(async () =>
+			{
+				_mainViewModel.DeleteItem.Execute(null);
+			});
 		}
+
+		public ICommand OpenItem { get; }
+		public ICommand DeleteItem { get; }
 
 		public Bitmap? PreviewBitmap
 		{
@@ -52,7 +68,14 @@ namespace VisualAxe.ViewModels
 				System.Diagnostics.Process.Start(startInfo);
 
 			}
-			
+		}
+
+		public void OpenByFiler()
+		{
+			if(File.Exists(_item.FilePath))
+			{
+				System.Diagnostics.Process.Start(_item.FilePath);
+			}
 		}
 
 		public async Task DeleteAsync()	//ViewModelから保持しているItemを削除できる

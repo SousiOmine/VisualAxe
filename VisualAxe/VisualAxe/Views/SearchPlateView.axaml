@@ -3,6 +3,7 @@
 			xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
 			xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
 			mc:Ignorable="d" d:DesignWidth="200" d:DesignHeight="20"
+			MinWidth="100"
 			x:Class="VisualAxe.Views.SearchPlateView"
 			xmlns:vm="clr-namespace:VisualAxe.ViewModels"
 			x:DataType="vm:SearchPlateViewModel">
@@ -13,4 +14,13 @@
 		</Border>
 		<TextBlock Text="{Binding Word}" VerticalAlignment="Center"/>
 	</StackPanel>
+
+	<UserControl.ContextMenu>
+		<ContextMenu>
+			<MenuItem Header="ピン留めする" Command="{Binding Pinned}"
+					  IsVisible="{Binding !IsPinned}"/>
+			<MenuItem Header="ピン留めを解除" Command="{Binding Unpinned}"
+					  IsVisible="{Binding IsPinned}"/>
+		</ContextMenu>
+	</UserControl.ContextMenu>
 </UserControl>

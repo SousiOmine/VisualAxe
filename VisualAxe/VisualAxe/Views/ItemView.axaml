@@ -17,4 +17,12 @@
 		</StackPanel>
 	</Grid>
 
+	<UserControl.ContextMenu>
+		<ContextMenu>
+			<MenuItem Header="開く" Command="{Binding OpenItem}"/>
+			<MenuItem Header="削除" Command="{Binding DeleteItem}"/>
+		</ContextMenu>
+
+	</UserControl.ContextMenu>
+
 </UserControl>
