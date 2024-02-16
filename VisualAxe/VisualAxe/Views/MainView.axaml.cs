@@ -11,7 +11,7 @@ namespace VisualAxe.Views;
 
 public partial class MainView : UserControl
 {
-    private MainViewModel VM
+    private MainViewModel? VM
     {
         get { return this.DataContext as MainViewModel; }
 	}
@@ -26,7 +26,7 @@ public partial class MainView : UserControl
     private void DropFile(object? sender, DragEventArgs e)
     {
 		var dropData = e.Data;
-		this.VM.DropsFiles(dropData);
+		this.VM?.DropsFiles(dropData);
 	}
 
 	private async void AddButton_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
@@ -41,6 +41,6 @@ public partial class MainView : UserControl
                 Title = "Open File",
                 AllowMultiple = true
         });
-        this.VM.AddItemFromDialog(files);
+        this.VM?.AddItemFromDialog(files);
 	}
 }

@@ -139,11 +139,11 @@ namespace VisualAxe.ViewModels
 					await item.DeleteAsync();
 				}
 				DoSearchItems();
-				PartialLoad(0, _loadLimit, true);
+				await PartialLoad(0, _loadLimit, true);
 			});
-			MoreShowItem = ReactiveCommand.Create(() =>
+			MoreShowItem = ReactiveCommand.Create(async () =>
 			{
-				PartialLoad(_loadLimit, _loadLimit + 200, false);
+				await PartialLoad(_loadLimit, _loadLimit + 200, false);
 				_loadLimit += 200;
 			});
 
@@ -258,7 +258,7 @@ namespace VisualAxe.ViewModels
 		public async void DropsFiles(IDataObject data)
 		{
 			if (data is null) return;
-			if (data.GetText() != null) //もしデータがテキストだったら
+			if (data.GetText() is not null) //もしデータがテキストだったら
 			{
 				Item item = new Item();
 				item.Title = data.GetText();
@@ -269,7 +269,7 @@ namespace VisualAxe.ViewModels
 
 				await item.AddToDB();
 				DoSearchItems();
-				PartialLoad(0, _loadLimit, true);
+				await PartialLoad(0, _loadLimit, true);
 				await item.MakeIndex();
 				return;
 			}

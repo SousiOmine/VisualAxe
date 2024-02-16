@@ -12,6 +12,17 @@
     <AvaloniaResource Include="Assets\**" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Remove="Assets\code_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\draft_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\folder_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\folder_zip_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\html_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\link_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\movie_FILL1_wght400_GRAD0_opsz24.png" />
+    <None Remove="Assets\picture_as_pdf_FILL0_wght400_GRAD0_opsz24.png" />
+  </ItemGroup>
+
 
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="11.0.9" />

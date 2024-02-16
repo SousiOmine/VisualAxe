@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Avalonia.Platform;
 using LiteDB;
 using System;
 using System.Collections.Generic;
@@ -148,21 +149,85 @@ namespace VisualAxe.Models
 						}
 						if(bitmap is not null)
 						{
-							double scale = (double)Width / bitmap.PixelSize.Width;
-							PixelSize pixelSize = new((int)(bitmap.PixelSize.Width * scale), (int)(bitmap.PixelSize.Height * scale));
-							bitmap = bitmap.CreateScaledBitmap(pixelSize, BitmapInterpolationMode.LowQuality);
+							double picscale = (double)Width / bitmap.PixelSize.Width;
+							PixelSize picpixelSize = new((int)(bitmap.PixelSize.Width * picscale), (int)(bitmap.PixelSize.Height * picscale));
+							bitmap = bitmap.CreateScaledBitmap(picpixelSize, BitmapInterpolationMode.LowQuality);
 						}
 
 
 						break;
 
+					case ".pdf":
+						if (!getIcon) break; 
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/picture_as_pdf_FILL0_wght400_GRAD0_opsz24.png")));
+						double pdfscale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize pdfpixelSize = new((int)(bitmap.PixelSize.Width * pdfscale), (int)(bitmap.PixelSize.Height * pdfscale));
+						bitmap = bitmap.CreateScaledBitmap(pdfpixelSize, BitmapInterpolationMode.LowQuality);
+						break;
+
+					case ".zip":
+						if (!getIcon) break;
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/folder_zip_FILL1_wght400_GRAD0_opsz24.png")));
+						double zipscale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize zippixelSize = new((int)(bitmap.PixelSize.Width * zipscale), (int)(bitmap.PixelSize.Height * zipscale));
+						bitmap = bitmap.CreateScaledBitmap(zippixelSize, BitmapInterpolationMode.LowQuality);
+						break;
+
+					case ".mp4":
+					case ".mov":
+					case ".ts":
+					case ".mkv":
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/movie_FILL1_wght400_GRAD0_opsz24.png")));
+						double movscale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize movpixelSize = new((int)(bitmap.PixelSize.Width * movscale), (int)(bitmap.PixelSize.Height * movscale));
+						bitmap = bitmap.CreateScaledBitmap(movpixelSize, BitmapInterpolationMode.LowQuality);
+						break;
+
+					case ".cs":
+					case ".vb":
+					case ".py":
+					case ".java":
+					case ".rb":
+					case ".c":
+					case ".cpp":
+					case ".xml":
+					case ".xaml":
+					case ".axaml":
+						if (!getIcon) break;
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/code_FILL1_wght400_GRAD0_opsz24.png")));
+						double codescale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize codepixelSize = new((int)(bitmap.PixelSize.Width * codescale), (int)(bitmap.PixelSize.Height * codescale));
+						bitmap = bitmap.CreateScaledBitmap(codepixelSize, BitmapInterpolationMode.LowQuality);
+						break;
+
+					case ".html":
+						if (!getIcon) break;
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/html_FILL1_wght400_GRAD0_opsz24.png")));
+						double htmlscale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize htmlpixelSize = new((int)(bitmap.PixelSize.Width * htmlscale), (int)(bitmap.PixelSize.Height * htmlscale));
+						bitmap = bitmap.CreateScaledBitmap(htmlpixelSize, BitmapInterpolationMode.LowQuality);
+						break;
+
 					default:
+						if (!getIcon) break;
+						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/draft_FILL1_wght400_GRAD0_opsz24.png")));
+						double defscale = (double)Width / bitmap.PixelSize.Width;
+						PixelSize defpixelSize = new((int)(bitmap.PixelSize.Width * defscale), (int)(bitmap.PixelSize.Height * defscale));
+						bitmap = bitmap.CreateScaledBitmap(defpixelSize, BitmapInterpolationMode.LowQuality);
 						break;  // 何もしない
 				}
 			}
 			else if (Directory.Exists(item.FilePath))
 			{
 
+			}
+
+			else if (!String.IsNullOrEmpty(item.Url))
+			{
+				bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/link_FILL1_wght400_GRAD0_opsz24.png")));
+				double picscale = (double)Width / bitmap.PixelSize.Width;
+				PixelSize picpixelSize = new((int)(bitmap.PixelSize.Width * picscale), (int)(bitmap.PixelSize.Height * picscale));
+				bitmap = bitmap.CreateScaledBitmap(picpixelSize, BitmapInterpolationMode.LowQuality);
 			}
 
 			return bitmap;
@@ -234,7 +299,7 @@ namespace VisualAxe.Models
 			}
 			
 			this.Index = "AnalysisOK";
-			this.UpdateDB();
+			await this.UpdateDB();
 		}
 
 		public async Task UpdateDB()

@@ -4,6 +4,7 @@ using Avalonia.Media.Imaging;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -68,6 +69,16 @@ namespace VisualAxe.ViewModels
 				System.Diagnostics.Process.Start(startInfo);
 
 			}
+			else if(_item.Url is not null)
+			{
+				ProcessStartInfo psi = new ProcessStartInfo()
+				{
+					FileName = _item.Url,
+					UseShellExecute = true
+				};
+				Process.Start(psi);
+			}
+			
 		}
 
 		public void OpenByFiler()
