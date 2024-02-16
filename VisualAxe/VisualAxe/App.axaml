@@ -14,4 +14,19 @@
         <StyleInclude Source="avares://Avalonia.Controls.ColorPicker/Themes/Fluent/Fluent.xaml"/>
         <StyleInclude Source="avares://VisualAxe/Icons.axaml"/>
     </Application.Styles>
+
+	<TrayIcon.Icons>
+		<TrayIcons>
+			<TrayIcon Icon="avares://VisualAxe/Assets/avalonia-logo.ico"
+					  ToolTipText="VisualAxe">
+				<TrayIcon.Menu>
+					<NativeMenu>
+						<NativeMenuItem Header="ウィンドウを表示" Click="ShowMenuItem_Click"/>
+						<NativeMenuItemSeparator />
+						<NativeMenuItem Header="終了" Click="ShutdownMenuItem_Click"/>
+					</NativeMenu>
+				</TrayIcon.Menu>
+			</TrayIcon>
+		</TrayIcons>
+	</TrayIcon.Icons>
 </Application>

@@ -1,6 +1,7 @@
 ﻿using Avalonia;
 using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
+using System;
 using System.Diagnostics;
 using VisualAxe.ViewModels;
 using VisualAxe.Views;
@@ -46,13 +47,29 @@ namespace VisualAxe
 					}
 				};
 
-				desktop.MainWindow = new MainWindow
+				MainWindow _mainWindowInstance = MainWindow.GetInstance();
+                _mainWindowInstance.DataContext = new MainWindowViewModel();
+                desktop.MainWindow = _mainWindowInstance;
+
+                /*desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(),
-                };
-            }
+                };*/
+			}
 
             base.OnFrameworkInitializationCompleted();
         }
-    }
+
+		private void ShutdownMenuItem_Click(object? sender, System.EventArgs e)
+		{
+            //アプリを終了する
+            Environment.Exit(0);
+		}
+
+		private void ShowMenuItem_Click(object? sender, System.EventArgs e)
+		{
+			MainWindow _mainWindowInstance = MainWindow.GetInstance();
+			_mainWindowInstance.Show();
+		}
+	}
 }
