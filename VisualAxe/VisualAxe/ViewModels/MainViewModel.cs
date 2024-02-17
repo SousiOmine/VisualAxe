@@ -210,7 +210,7 @@ namespace VisualAxe.ViewModels
 			var cancellationToken = _cancellationTokenSource.Token;
 
 			
-			var resultfromdb = await Item.Search(searchInfo);
+			var resultfromdb = await Item.SearchAsync(searchInfo);
 
 			_resultItems.Clear();
 			foreach (var item in resultfromdb)
@@ -267,13 +267,14 @@ namespace VisualAxe.ViewModels
 					item.Url = data.GetText();
 				}
 
-				await item.AddToDB();
+				await item.AddToDBAsync();
 				DoSearchItems();
 				await PartialLoad(0, _loadLimit, true);
-				await item.MakeIndex();
+				await item.MakeIndexAsync();
 				return;
 			}
 
+			if (data.GetFiles() is null) return;
 			var files = new Collection<Item>();
 			foreach (var file in data.GetFiles())
 			{
@@ -282,7 +283,7 @@ namespace VisualAxe.ViewModels
 					Title = file.Name,
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
-				await item.AddToDB();
+				await item.AddToDBAsync();
 				files.Add(item);
 			}
 
@@ -291,7 +292,7 @@ namespace VisualAxe.ViewModels
 			foreach (var item in files)
 			{
 				
-				await item.MakeIndex();
+				await item.MakeIndexAsync();
 			}
 		}
 
@@ -306,14 +307,14 @@ namespace VisualAxe.ViewModels
 					Title = file.Name,
 					FilePath = file.Path.ToString().Replace(@"file:///", "")
 				};
-				await item.AddToDB();
+				await item.AddToDBAsync();
 				collectFiles.Add(item);
 			}
 			DoSearchItems();
 
 			foreach (var item in collectFiles)
 			{
-				await item.MakeIndex();
+				await item.MakeIndexAsync();
 			}
 		}
 

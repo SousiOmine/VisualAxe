@@ -91,7 +91,7 @@ namespace VisualAxe.ViewModels
 
 		public async Task DeleteAsync()	//ViewModelから保持しているItemを削除できる
 		{
-			await _item.DeleteFromDB();
+			await _item.DeleteFromDBAsync();
 			if(PreviewBitmap != null) PreviewBitmap.Dispose();
 		}
 	}

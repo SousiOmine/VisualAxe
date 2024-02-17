@@ -69,6 +69,7 @@ namespace VisualAxe
 		private void ShowMenuItem_Click(object? sender, System.EventArgs e)
 		{
 			MainWindow _mainWindowInstance = MainWindow.GetInstance();
+            _mainWindowInstance.Hide();
 			_mainWindowInstance.Show();
 		}
 	}

@@ -28,7 +28,7 @@ namespace VisualAxe.Models
 		private static LiteDatabase db_context = new("./data.db");
 		private static readonly string ItemsStorageName = "ItemsStorage";	//アイテムのファイルを格納しておくフォルダ
 
-		public static async Task<List<Item>> GetAllItems()
+		public static async Task<List<Item>> GetAllItemsAsync()
 		{
 			var items = new List<Item>();
 			items = db_context.GetCollection<Item>("items").FindAll().ToList();
@@ -36,7 +36,7 @@ namespace VisualAxe.Models
 			return items;
 		}
 
-		public static async Task<Item?> GetItem(int id)
+		public static async Task<Item?> GetItemAsync(int id)
 		{	
 			var items = db_context.GetCollection<Item>("items");
 			
@@ -44,7 +44,7 @@ namespace VisualAxe.Models
 			return item;
 		}
 
-		public static Task<List<Item>> Search(SearchInfo info)
+		public static Task<List<Item>> SearchAsync(SearchInfo info)
 		{
 			var all_items = new List<Item>();
 			all_items = db_context.GetCollection<Item>("items").FindAll().ToList();
@@ -106,7 +106,7 @@ namespace VisualAxe.Models
 					if(item.Colors is null) continue;
 					for (int i = 0; i < Math.Min(item.Colors.Count, 5); i++)
 					{
-						if (Analysis.ColorDistance((Color)item.Colors[i], (Color)info.color) <= 100)
+						if (ItemAnalysis.ColorDistance((Color)item.Colors[i], (Color)info.color) <= 100)
 						{
 							color_results.Add(item);
 							break;
@@ -149,9 +149,7 @@ namespace VisualAxe.Models
 						}
 						if(bitmap is not null)
 						{
-							double picscale = (double)Width / bitmap.PixelSize.Width;
-							PixelSize picpixelSize = new((int)(bitmap.PixelSize.Width * picscale), (int)(bitmap.PixelSize.Height * picscale));
-							bitmap = bitmap.CreateScaledBitmap(picpixelSize, BitmapInterpolationMode.LowQuality);
+							bitmap = ResizeBitmap(bitmap, Width);
 						}
 
 
@@ -160,17 +158,13 @@ namespace VisualAxe.Models
 					case ".pdf":
 						if (!getIcon) break; 
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/picture_as_pdf_FILL0_wght400_GRAD0_opsz24.png")));
-						double pdfscale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize pdfpixelSize = new((int)(bitmap.PixelSize.Width * pdfscale), (int)(bitmap.PixelSize.Height * pdfscale));
-						bitmap = bitmap.CreateScaledBitmap(pdfpixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;
 
 					case ".zip":
 						if (!getIcon) break;
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/folder_zip_FILL1_wght400_GRAD0_opsz24.png")));
-						double zipscale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize zippixelSize = new((int)(bitmap.PixelSize.Width * zipscale), (int)(bitmap.PixelSize.Height * zipscale));
-						bitmap = bitmap.CreateScaledBitmap(zippixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;
 
 					case ".mp4":
@@ -178,9 +172,7 @@ namespace VisualAxe.Models
 					case ".ts":
 					case ".mkv":
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/movie_FILL1_wght400_GRAD0_opsz24.png")));
-						double movscale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize movpixelSize = new((int)(bitmap.PixelSize.Width * movscale), (int)(bitmap.PixelSize.Height * movscale));
-						bitmap = bitmap.CreateScaledBitmap(movpixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;
 
 					case ".cs":
@@ -195,25 +187,19 @@ namespace VisualAxe.Models
 					case ".axaml":
 						if (!getIcon) break;
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/code_FILL1_wght400_GRAD0_opsz24.png")));
-						double codescale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize codepixelSize = new((int)(bitmap.PixelSize.Width * codescale), (int)(bitmap.PixelSize.Height * codescale));
-						bitmap = bitmap.CreateScaledBitmap(codepixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;
 
 					case ".html":
 						if (!getIcon) break;
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/html_FILL1_wght400_GRAD0_opsz24.png")));
-						double htmlscale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize htmlpixelSize = new((int)(bitmap.PixelSize.Width * htmlscale), (int)(bitmap.PixelSize.Height * htmlscale));
-						bitmap = bitmap.CreateScaledBitmap(htmlpixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;
 
 					default:
 						if (!getIcon) break;
 						bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/draft_FILL1_wght400_GRAD0_opsz24.png")));
-						double defscale = (double)Width / bitmap.PixelSize.Width;
-						PixelSize defpixelSize = new((int)(bitmap.PixelSize.Width * defscale), (int)(bitmap.PixelSize.Height * defscale));
-						bitmap = bitmap.CreateScaledBitmap(defpixelSize, BitmapInterpolationMode.LowQuality);
+						bitmap = ResizeBitmap(bitmap, Width);
 						break;  // 何もしない
 				}
 			}
@@ -225,90 +211,44 @@ namespace VisualAxe.Models
 			else if (!String.IsNullOrEmpty(item.Url))
 			{
 				bitmap = new Bitmap(AssetLoader.Open(new Uri("avares://VisualAxe/Assets/link_FILL1_wght400_GRAD0_opsz24.png")));
-				double picscale = (double)Width / bitmap.PixelSize.Width;
-				PixelSize picpixelSize = new((int)(bitmap.PixelSize.Width * picscale), (int)(bitmap.PixelSize.Height * picscale));
-				bitmap = bitmap.CreateScaledBitmap(picpixelSize, BitmapInterpolationMode.LowQuality);
+				bitmap = ResizeBitmap(bitmap, Width);
 			}
 
 			return bitmap;
+
+			Bitmap ResizeBitmap(Bitmap bmp, int width)
+			{
+				double scale = (double)width / bmp.PixelSize.Width;
+				PixelSize pixelSize = new((int)(bmp.PixelSize.Width * scale), (int)(bmp.PixelSize.Height * scale));
+				bmp = bmp.CreateScaledBitmap(pixelSize, BitmapInterpolationMode.LowQuality);
+				return bmp;
+			}
 		}
 
-		public async Task<int> AddToDB()
+		public async Task<int> AddToDBAsync()
 		{
 			this.AddedDate = DateTime.Now;
 
-			//ファイルがなくてもフォルダはとりあえず作成しておく
-			await Task.Run(() =>
-			{
-				if (!Directory.Exists("." + Path.DirectorySeparatorChar + ItemsStorageName))    //格納用フォルダがなければ作成
-				{
-					Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName);
-				}
-			});
-			string rand_folder = Guid.NewGuid().ToString().Substring(0, 16);    //GUIDを使ってランダムな16文字を用意
-			await Task.Run(() =>
-			{
-				Directory.CreateDirectory("." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder);
-			});
-
-			if (this.FilePath is not null && this.FilePath != "" && File.Exists(this.FilePath)) //もしファイルパスが定義されており、かつファイルが存在する場合はコピー
-			{
-				string copied_path = "." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder + Path.DirectorySeparatorChar + Path.GetFileName(this.FilePath);
-				await Task.Run(() =>
-				{
-					File.Copy(this.FilePath, copied_path);
-				});
-				this.FilePath = copied_path;
-			}
-			else if (this.Url is not null)  //もしURLが定義されていた場合
-			{
-				//画像ならダウンロードしフォルダに配置する
-				if(this.Url.Contains("png", StringComparison.OrdinalIgnoreCase) || this.Url.Contains("jpg", StringComparison.OrdinalIgnoreCase) || this.Url.Contains("jpeg", StringComparison.OrdinalIgnoreCase))
-				{
-					string download_path = "." + Path.DirectorySeparatorChar + ItemsStorageName + Path.DirectorySeparatorChar + rand_folder + Path.DirectorySeparatorChar + "image.png";
-					await Task.Run(async () =>
-					{
-						var client = new HttpClient();
-						var responce = await client.GetAsync(this.Url);
-						if(responce.IsSuccessStatusCode)
-						{
-							using var stream = await responce.Content.ReadAsStreamAsync();
-							using var outStream = File.Create(download_path);
-							stream.CopyTo(outStream);
-							this.FilePath = download_path;
-						}
-					});
-				}
-				
-			}
+			await ItemAnalysis.InstantAnalysisAsync(this);
 
 			var items = db_context.GetCollection<Item>("items");
 			int returnId = items.Insert(this);
 			return returnId;
 		}
 
-		public async Task MakeIndex()
+		public async Task MakeIndexAsync()
 		{
-			//await Task.Delay(5000);
-			Bitmap? mybmp = await Item.GetPreviewAsync(this, 200, false);
-			if(mybmp is not null)	//もし画像があれば
-			{	
-				List<Color> colors = await Analysis.GetMajorColorAsync(mybmp, 50);
-				this.Colors = [.. colors];
-				mybmp.Dispose();
-			}
-			
-			this.Index = "AnalysisOK";
-			await this.UpdateDB();
+			await ItemAnalysis.DeepAnalysisAsync(this);
+			await this.UpdateDBAsync();
 		}
 
-		public async Task UpdateDB()
+		public async Task UpdateDBAsync()
 		{
 			var items = db_context.GetCollection<Item>("items");
 			items.Update(this);
 		}
 
-		public async Task DeleteFromDB()
+		public async Task DeleteFromDBAsync()
 		{
 			if (this.FilePath != null && this.FilePath != "" && File.Exists(this.FilePath)) //もしファイルパスが定義されており、かつファイルが存在する場合
 			{

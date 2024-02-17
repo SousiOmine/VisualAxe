@@ -120,10 +120,10 @@ namespace VisualAxe.ViewModels
 		private async void UpdateItem()
 		{
 			Item? item = new Item();
-			item = await Item.GetItem(_item.Id);
+			item = await Item.GetItemAsync(_item.Id);
 			if (item is null) return;
 			item.Memo = this.Memo;
-			await item.UpdateDB();
+			await item.UpdateDBAsync();
 		}
 	}
 }
