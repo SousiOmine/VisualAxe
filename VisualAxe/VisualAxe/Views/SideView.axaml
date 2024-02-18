@@ -42,10 +42,20 @@
 		<TextBlock Text="{Binding Title}" 
 				   Margin="0 16 0 0"
 				   TextWrapping="WrapWithOverflow"/>
-		<Button Content="{Binding Url}"
-				Command="{Binding OpenUrl}"
-				IsVisible="{Binding Url, Converter={x:Static ObjectConverters.IsNotNull}}"
-				Margin="0 16 0 0"/>
+		<Grid Margin="0 16 0 0">
+			<Grid.ColumnDefinitions>
+				<ColumnDefinition Width="auto"/>
+				<ColumnDefinition Width="*"/>
+			</Grid.ColumnDefinitions>
+			<Button Content="URL"
+					Command="{Binding OpenUrl}"
+					Grid.Column="0"
+					Margin="0 0 4 0" />
+			<TextBox Text="{Binding Url}"
+					 Watermark="アイテムのURLがあれば入力"
+					 Grid.Column="1"/>
+		</Grid>
+		
 		<TextBlock Text="メモ" FontSize="16" Margin="0 16 0 0"/>
 		<TextBox Text="{Binding Memo}"
 				AcceptsReturn="True"

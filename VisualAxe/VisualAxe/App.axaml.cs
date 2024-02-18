@@ -3,6 +3,7 @@ using Avalonia.Controls.ApplicationLifetimes;
 using Avalonia.Markup.Xaml;
 using System;
 using System.Diagnostics;
+using VisualAxe.Server;
 using VisualAxe.ViewModels;
 using VisualAxe.Views;
 
@@ -51,10 +52,14 @@ namespace VisualAxe
                 _mainWindowInstance.DataContext = new MainWindowViewModel();
                 desktop.MainWindow = _mainWindowInstance;
 
+
                 /*desktop.MainWindow = new MainWindow
                 {
                     DataContext = new MainWindowViewModel(),
                 };*/
+                
+
+                RestAPI.ServerStart();
 			}
 
             base.OnFrameworkInitializationCompleted();
@@ -62,8 +67,9 @@ namespace VisualAxe
 
 		private void ShutdownMenuItem_Click(object? sender, System.EventArgs e)
 		{
-            //アプリを終了する
-            Environment.Exit(0);
+            RestAPI.ServerStop();
+			//アプリを終了する
+			Environment.Exit(0);
 		}
 
 		private void ShowMenuItem_Click(object? sender, System.EventArgs e)

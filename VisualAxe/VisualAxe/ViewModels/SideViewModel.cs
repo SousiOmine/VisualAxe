@@ -1,5 +1,6 @@
 ﻿using Avalonia.Media;
 using Avalonia.Media.Imaging;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ReactiveUI;
 using System;
 using System.Collections.Generic;
@@ -47,7 +48,11 @@ namespace VisualAxe.ViewModels
 		public string? Url
 		{
 			get { return _url; }
-			set { this.RaiseAndSetIfChanged(ref _url, value); }
+			set { 
+				this.RaiseAndSetIfChanged(ref _url, value);
+				_item.Url = value;
+				UpdateItem();
+			}
 		}
 
 		public Bitmap? PreviewBitmap
@@ -106,7 +111,15 @@ namespace VisualAxe.ViewModels
 					FileName = Url,
 					UseShellExecute = true
 				};
-				Process.Start(psi);
+				try
+				{
+					Process.Start(psi);
+				}
+				catch (Exception)
+				{
+					return;
+				}
+				
 			});
 		}
 
@@ -123,6 +136,7 @@ namespace VisualAxe.ViewModels
 			item = await Item.GetItemAsync(_item.Id);
 			if (item is null) return;
 			item.Memo = this.Memo;
+			item.Url = this.Url;
 			await item.UpdateDBAsync();
 		}
 	}
