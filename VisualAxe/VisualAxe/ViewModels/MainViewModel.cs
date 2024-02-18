@@ -136,10 +136,14 @@ namespace VisualAxe.ViewModels
 			{
 				foreach (var item in SelectedItems)
 				{
-					await item.DeleteAsync();
+					item.DeleteAsync();
+					
 				}
-				DoSearchItems();
-				await PartialLoad(0, _loadLimit, true);
+				foreach (var item in SelectedItems.ToList())
+				{
+					ItemsToDisplay.Remove(item);
+				}
+
 			});
 			MoreShowItem = ReactiveCommand.Create(async () =>
 			{
