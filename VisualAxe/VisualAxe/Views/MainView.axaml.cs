@@ -43,4 +43,9 @@ public partial class MainView : UserControl
         });
         this.VM?.AddItemFromDialog(files);
 	}
+
+	private void MenuCloseItem_Click(object? sender, Avalonia.Interactivity.RoutedEventArgs e)
+	{
+        MainWindow.GetInstance().Close();
+	}
 }

@@ -19,7 +19,7 @@ namespace VisualAxe.ViewModels
 		private Item _item;
 		private MainViewModel _mainViewModel;
 		private Bitmap? _previewBitmap;
-		public string Title => _item.Title;
+		public string? Title => _item.Title;
 
 		public ItemViewModel(Item item, MainViewModel mainViewModel)
 		{

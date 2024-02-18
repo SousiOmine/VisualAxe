@@ -146,6 +146,10 @@ namespace VisualAxe.ViewModels
 				await PartialLoad(_loadLimit, _loadLimit + 200, false);
 				_loadLimit += 200;
 			});
+			ReloadList = ReactiveCommand.Create(async () =>
+			{
+				DoSearchItems();
+			});
 
 			this.WhenAnyValue(x => x.SearchText)
 				.Throttle(TimeSpan.FromMilliseconds(300))
@@ -167,6 +171,7 @@ namespace VisualAxe.ViewModels
 		public ICommand OpenItem { get; }
 		public ICommand DeleteItem { get; }
 		public ICommand MoreShowItem { get; }
+		public ICommand ReloadList { get; }
 
 		private async Task<bool> PartialLoad(int start, int end, bool clear)    //startからendまで読み込む clearがfalseであれば既存のItemsを消さない
 		{

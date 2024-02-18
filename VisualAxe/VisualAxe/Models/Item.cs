@@ -26,7 +26,6 @@ namespace VisualAxe.Models
 		public string? Index { get; set; }
 
 		private static LiteDatabase db_context = new("./data.db");
-		private static readonly string ItemsStorageName = "ItemsStorage";	//アイテムのファイルを格納しておくフォルダ
 
 		public static async Task<List<Item>> GetAllItemsAsync()
 		{
