@@ -17,7 +17,7 @@
 
 	<TrayIcon.Icons>
 		<TrayIcons>
-			<TrayIcon Icon="avares://VisualAxe/Assets/avalonia-logo.ico"
+			<TrayIcon Icon="avares://VisualAxe/Assets/icon.ico"
 					  ToolTipText="VisualAxe">
 				<TrayIcon.Menu>
 					<NativeMenu>
