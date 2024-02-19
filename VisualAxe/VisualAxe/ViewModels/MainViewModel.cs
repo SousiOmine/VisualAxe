@@ -125,11 +125,18 @@ namespace VisualAxe.ViewModels
 		public MainViewModel()
 		{
 			SelectedItems.CollectionChanged += SideViewReflection;
-			OpenItem = ReactiveCommand.Create(() =>
+			OpenFile = ReactiveCommand.Create(() =>
 			{
 				foreach(var item in SelectedItems)
 				{
 					item.OpenByProcess();
+				}
+			});
+			OpenUrl = ReactiveCommand.Create(() =>
+			{
+				foreach (var item in SelectedItems)
+				{
+					item.OpenByBrowser();
 				}
 			});
 			DeleteItem = ReactiveCommand.Create(async () =>
@@ -172,7 +179,8 @@ namespace VisualAxe.ViewModels
 		}
 
 
-		public ICommand OpenItem { get; }
+		public ICommand OpenFile { get; }
+		public ICommand OpenUrl { get; }
 		public ICommand DeleteItem { get; }
 		public ICommand MoreShowItem { get; }
 		public ICommand ReloadList { get; }

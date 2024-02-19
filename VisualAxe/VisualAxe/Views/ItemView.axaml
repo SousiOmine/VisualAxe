@@ -19,7 +19,10 @@
 
 	<UserControl.ContextMenu>
 		<ContextMenu>
-			<MenuItem Header="開く" Command="{Binding OpenItem}"/>
+			<MenuItem Header="URLを開く" Command="{Binding OpenUrl}"
+					  IsVisible="{Binding HaveUrl}"/>
+			<MenuItem Header="ファイルを開く" Command="{Binding OpenFile}"
+					  IsVisible="{Binding HaveFile}"/>
 			<MenuItem Header="削除" Command="{Binding DeleteItem}"/>
 		</ContextMenu>
 

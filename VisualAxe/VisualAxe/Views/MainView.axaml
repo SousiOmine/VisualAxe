@@ -82,7 +82,7 @@
 						Click="AddButton_Click"
 						Margin="0 5"/>
 				<Button Content="開く"
-						Command="{Binding OpenItem}"
+						Command="{Binding OpenFile}"
 						IsVisible="{Binding SelectedItem, Converter={x:Static ObjectConverters.IsNotNull}}"
 						Margin="10 5"/>
 				<Button Content="削除"

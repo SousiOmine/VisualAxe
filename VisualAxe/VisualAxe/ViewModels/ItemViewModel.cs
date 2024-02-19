@@ -20,6 +20,13 @@ namespace VisualAxe.ViewModels
 		private MainViewModel _mainViewModel;
 		private Bitmap? _previewBitmap;
 		public string? Title => _item.Title;
+		public bool HaveFile => !String.IsNullOrWhiteSpace(_item.FilePath);
+		public bool HaveUrl => !String.IsNullOrWhiteSpace(_item.Url);
+		public Bitmap? PreviewBitmap
+		{
+			get => _previewBitmap;
+			set => this.RaiseAndSetIfChanged(ref _previewBitmap, value);
+		}
 
 		public ItemViewModel(Item item, MainViewModel mainViewModel)
 		{
@@ -27,9 +34,13 @@ namespace VisualAxe.ViewModels
 			_mainViewModel = mainViewModel;
 
 
-			OpenItem = ReactiveCommand.Create(() =>
+			OpenFile = ReactiveCommand.Create(() =>
 			{
-				_mainViewModel.OpenItem.Execute(null);
+				_mainViewModel.OpenFile.Execute(null);
+			});
+			OpenUrl = ReactiveCommand.Create(() =>
+			{
+				_mainViewModel.OpenUrl.Execute(null);
 			});
 			DeleteItem = ReactiveCommand.Create(async () =>
 			{
@@ -37,14 +48,11 @@ namespace VisualAxe.ViewModels
 			});
 		}
 
-		public ICommand OpenItem { get; }
+		public ICommand OpenUrl { get; }
+		public ICommand OpenFile { get; }
 		public ICommand DeleteItem { get; }
 
-		public Bitmap? PreviewBitmap
-		{
-			get => _previewBitmap;
-			set => this.RaiseAndSetIfChanged(ref _previewBitmap, value);
-		}
+		
 
 		public Item GetItem()
 		{
@@ -69,7 +77,11 @@ namespace VisualAxe.ViewModels
 				System.Diagnostics.Process.Start(startInfo);
 
 			}
-			else if(_item.Url is not null)
+		}
+
+		public void OpenByBrowser()
+		{
+			if (_item.Url is not null)
 			{
 				ProcessStartInfo psi = new ProcessStartInfo()
 				{
@@ -77,15 +89,6 @@ namespace VisualAxe.ViewModels
 					UseShellExecute = true
 				};
 				Process.Start(psi);
-			}
-			
-		}
-
-		public void OpenByFiler()
-		{
-			if(File.Exists(_item.FilePath))
-			{
-				System.Diagnostics.Process.Start(_item.FilePath);
 			}
 		}
 
